@@ -1,10 +1,8 @@
-# Getting Started with Create React App
+#BeMySample
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Situs Web Penghubung Peneliti dengan Responden Kontributif sebagai Solusi Pencarian Data yang Akurat dan Variatif
 
-## Available Scripts
-
-In the project directory, you can run:
+BeMySample adalah platform web yang menghubungkan peneliti dengan responden yang saling berkontribusi, membantu dalam pengumpulan data yang akurat dan bervariasi.
 
 ### `npm start`
 
