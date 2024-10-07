@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import logoBeMySample from '../assets/images/BeMySampleLogo_Transparent.png'
-import { FaBars, FaHome, FaSignInAlt } from 'react-icons/fa'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
+import { Icon } from '@iconify/react'
 
 const NavBar = () => {
-	const dropdownRef = useRef(null)
 	const location = useLocation()
-	const navigate = useNavigate()
-	const [isDropdownOpen, setDropdownOpen] = useState(false)
 	const storedLanguage = localStorage.getItem('language') || 'id'
 	const [language, setLanguage] = useState(storedLanguage)
 	const [navBarMobile, setNavBarMobile] = useState(false)
@@ -66,16 +63,16 @@ const NavBar = () => {
 			<nav
 				className={`bg-opacity-70 backdrop-blur-sm p-2 py-3 justify-between flex items-center fixed w-full z-50 shadow-lg bg-white`}
 			>
-				<div className="cursor-pointer z-50 lg:flex absolute lg:visible invisible inset-0 flex items-center justify-center">
+				<div className="cursor-pointer z-20 lg:flex absolute lg:visible invisible inset-0 flex items-center justify-center">
 					<ul className="flex lg:space-x-2 md:space-x-0 items-center justify-center">
 						<li
 							className={`px-4 py-1 rounded-full ${
-								location.pathname === '/'
-									? 'bg-[#0081fb] text-white font-semibold py-2'
-									: `text-black hover:bg-gray-300 transition-all duration-300 py-2`
+								location.pathname === '/feature'
+									? 'bg-[#0081fb] text-white font-semibold py-1.5'
+									: `text-black hover:bg-gray-300 transition-all duration-300 py-1.5`
 							}`}
 						>
-							<span className="flex gap-2 items-center">
+							<span className="flex gap-2 items-center font-inter">
 								{location.pathname === '/feature' ? (
 									translations[language].feature
 								) : (
@@ -86,11 +83,11 @@ const NavBar = () => {
 						<li
 							className={`px-4 py-1 rounded-full ${
 								location.pathname === '/caseStudy'
-									? 'bg-[#0081fb] text-white font-semibold py-2'
-									: `text-black hover:bg-gray-300 transition-all duration-300 py-2`
+									? 'bg-[#0081fb] text-white font-semibold py-1.5'
+									: `text-black hover:bg-gray-300 transition-all duration-300 py-1.5`
 							}`}
 						>
-							<span className="flex gap-2 items-center">
+							<span className="flex gap-2 items-center font-inter">
 								{location.pathname === '/caseStudy' ? (
 									translations[language].caseStudy
 								) : (
@@ -103,11 +100,11 @@ const NavBar = () => {
 						<li
 							className={`px-4 py-1 rounded-full ${
 								location.pathname.startsWith('/vr-games')
-									? 'bg-[#0081fb] text-white font-semibold py-2'
-									: `text-black hover:bg-gray-300 transition-all duration-300 py-2`
+									? 'bg-[#0081fb] text-white font-semibold py-1.5'
+									: `text-black hover:bg-gray-300 transition-all duration-300 py-1.5`
 							}`}
 						>
-							<span className="flex gap-2 items-center">
+							<span className="flex gap-2 items-center font-inter">
 								{location.pathname === '/price' ? (
 									translations[language].price
 								) : (
@@ -115,30 +112,15 @@ const NavBar = () => {
 								)}
 							</span>
 						</li>
-						<li
-							className={`px-4 py-1 rounded-full ${
-								location.pathname === '/account'
-									? 'bg-[#0081fb] text-white font-semibold py-2'
-									: `text-black hover:bg-gray-300 transition-all duration-300 py-2`
-							}`}
-						>
-							<span className="flex gap-2 items-center">
-								{location.pathname === '/account' ? (
-									translations[language].account
-								) : (
-									<Link to="/account">{translations[language].account}</Link>
-								)}
-							</span>
-						</li>
 					</ul>
 				</div>
 
-				<div className="ml-5 flex flex-row items-center justify-center gap-0">
+				<div className="ml-5 flex flex-row items-center justify-center gap-0 z-50">
 					<Link to="/">
 						<LazyLoadImage
 							src={logoBeMySample}
 							alt="logo-hypertopia"
-							className="h-10 cursor-pointer"
+							className="h-[56px] cursor-pointer"
 						/>
 					</Link>
 				</div>
@@ -159,8 +141,8 @@ const NavBar = () => {
 										} hover:border-[#0081FB] transition-all duration-300 outline-none`}
 									/>
 								) : ( */}
-								<div className='flex flex-row gap-2 items-center'>
-									<button className="flex flex-row gap-2 items-center hover:bg-zinc-400 transition-all text-blue-700 px-4 py-2 rounded-xl">
+								<div className="flex flex-row gap-2 items-center font-inter">
+									<button className="flex flex-row gap-2 items-center hover:bg-blue-200 transition-all text-blue-700 px-4 py-2 rounded-xl">
 										<p className="font-semibold">
 											{translations[language].signIn}
 										</p>
