@@ -1,4 +1,5 @@
-![header](https://drive.google.com/uc?export=view&id=1sGq3rrXj-uh6DAGAxmnQgk5NSeaMuKWp)
+![image](https://github.com/user-attachments/assets/8d8d7b53-47ba-4320-b8ab-cdfb8ea0728a)
+
 # BeMySample
 
 ## Situs Web Penghubung Peneliti dengan Responden Kontributif sebagai Solusi Pencarian Data yang Akurat dan Variatif
