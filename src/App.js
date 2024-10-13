@@ -4,6 +4,7 @@ import './App.css';
 import LandingPage from './pages/LandingPage';
 import NavBar from './components/Navbar';
 
+
 const App = () => {
   return (
     <Router>

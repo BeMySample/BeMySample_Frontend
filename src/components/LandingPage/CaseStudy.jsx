@@ -1,41 +1,107 @@
-import React from 'react'
-import { Icon } from '@iconify/react'
+import React, { useRef } from 'react'
+import Carousel from 'react-multi-carousel'
+import 'react-multi-carousel/lib/styles.css'
+import { motion, useInView } from 'framer-motion'
+import pict from '../../assets/images/c1.png' // Pastikan path ini benar
+import pict2 from '../../assets/images/c2.png' // Pastikan path ini benar
+import pict3 from '../../assets/images/c3.png' // Pastikan path ini benar
 
-const CaseStudy = () => {
-  return (
-    <div className="flex flex-col items-center justify-center w-full py-10 gap-6 px-6">
-			<p className='text-[45px] text-center'>Kenapa BeMySample?</p>
-			
-      <div className='flex flex-row items-center justify-between gap-[29px] text-white'>
-        <div className='flex flex-col justify-center items-center gap-4 bg-[#8BD5E8] rounded-[16px] p-6'>
-          <Icon icon='material-symbols:handshake' className='size-[143px]' />
+const CaseStudyCarousel = () => {
+	// Array untuk menyimpan data section
+	const sections = [
+		{
+			title: 'Tugas Sekolah Selesai Lebih Mudah',
+			description:
+				'Observasi data dapat diolah lebih cepat dengan tingginya jumlah responden yang ingin berkontribusi',
+			image: pict2,
+		},
+		{
+			title: 'Observasi Lebih Mendalam dan Variatif',
+			description:
+				'Kuantitas data yang sedikit berpengaruh buruk hasil observasi tugas akhir Anda. Dengan BeMySample, Anda dapat menarik calon responden yang menjadi sasaran Anda dengan menggunakan MyPoin',
+			image: pict,
+		},
+		{
+			title: 'Latar Belakang Lebih Menggugah',
+			description:
+				'Dengan data pendukung yang melimpah, pernyataan Anda akan makin meyakinkan, tentunya dengan jaminan validitas data',
+			image: pict3,
+		},
+	]
 
-          <div className='flex flex-col items-center justify-center'>
-            <p className='text-[32px] font-bold font-inter'>Sistem Kontributif</p>
-            <p className='text-[16px] font-inter'>Saling bantu dan dapatkan MyPoin untuk membuat survei sendiri</p>
-          </div>
-        </div>
+	// Pengaturan carousel
+	const responsive = {
+		superLarge: {
+			breakpoint: { max: 4000, min: 3000 },
+			items: 3,
+		},
+		large: {
+			breakpoint: { max: 3000, min: 1024 },
+			items: 3,
+		},
+		medium: {
+			breakpoint: { max: 1024, min: 464 },
+			items: 1,
+		},
+		small: {
+			breakpoint: { max: 464, min: 0 },
+			items: 1,
+		},
+	}
 
-        <div className='flex flex-col justify-center items-center gap-4 bg-[#6AA9F0] rounded-[16px] p-6'>
-          <Icon icon='mingcute:ai-fill' className='size-[143px]' />
+	// useRef untuk melacak carousel container
+	const carouselRef = useRef(null)
+	// Menggunakan useInView untuk mendeteksi apakah elemen terlihat di layar
+	const isCarouselInView = useInView(carouselRef, { once: true })
 
-          <div className='flex flex-col items-center justify-center'>
-            <p className='text-[32px] font-bold font-inter'>Integrasi AI</p>
-            <p className='text-[16px] font-inter'>Buat survei lebih cepat dengan AI dan personalisasikan sesuai kebutuhan</p>
-          </div>
-        </div>
+	return (
+		<div
+			ref={carouselRef}
+			className="w-full py-10 gap-6 px-6 bg-gradient-to-r from-[#6AA9F0] to-[#2073DB] text-center"
+		>
+			<motion.p
+				className="text-[45px] text-white mb-10"
+				initial={{ opacity: 0, y: 50 }}
+				animate={isCarouselInView ? { opacity: 1, y: 0 } : {}}
+				transition={{ duration: 0.8 }}
+			>
+				Studi Kasus
+			</motion.p>
 
-        <div className='flex flex-col justify-center items-center gap-4 bg-[#D2C6F1] rounded-[16px] p-6'>
-          <Icon icon='akar-icons:statistic-up' className='size-[143px]' />
-
-          <div className='flex flex-col items-center justify-center'>
-            <p className='text-[32px] font-bold font-inter'>Analisis Lengkap</p>
-            <p className='text-[16px] font-inter'>Dashboard yang kaya informasi untuk memudahkan riset Anda</p>
-          </div>
-        </div>
-      </div>
+			<Carousel
+				responsive={responsive}
+				infinite
+				autoPlay
+				autoPlaySpeed={3000}
+				transitionDuration={500}
+				showDots
+				dotListClass="custom-dot-list-style"
+				containerClass="carousel-container"
+			>
+				{sections.map((section, index) => (
+					<motion.div
+						key={index}
+						className="flex flex-col justify-start items-center bg-white rounded-[32px] px-[32px] py-[30px] mx-5 gap-[28px] h-full"
+						initial={{ opacity: 0, y: 50 }}
+						animate={isCarouselInView ? { opacity: 1, y: 0 } : {}}
+						transition={{ duration: 0.8, delay: index * 0.3 }}
+					>
+						<img
+							src={section.image}
+							alt={section.title}
+							className="h-auto w-auto"
+						/>
+						<div className="flex flex-col items-start">
+							<p className="text-[32px] font-bold font-inter">
+								{section.title}
+							</p>
+							<p className="text-[16px] font-inter">{section.description}</p>
+						</div>
+					</motion.div>
+				))}
+			</Carousel>
 		</div>
-  )
+	)
 }
 
-export default CaseStudy
+export default CaseStudyCarousel

@@ -8,6 +8,7 @@ module.exports = {
       fontFamily: {
         'header': ['Gill Sans MT', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
+        'poppins': ['Poppins', 'sans-serif'],
       }
     },
   },
