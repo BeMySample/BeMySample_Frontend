@@ -56,9 +56,9 @@ const WhyBeMySample = () => {
 				{features.map((feature, index) => (
 					<motion.div
 						key={index}
-						initial={{ opacity: 0, y: 20 }} // Set initial state
-						animate={isVisible ? { opacity: 1, y: 0 } : {}} // Animate when visible
-						transition={{ duration: 0.5, delay: index * 0.3 }} // Delay for staggered effect
+						initial={{ opacity: 0, y: 20 }}
+						animate={isVisible ? { opacity: 1, y: 0 } : {}}
+						transition={{ duration: 0.5, delay: index * 0.3 }}
 						className={`flex flex-col justify-center items-center gap-4 ${feature.bgColor} rounded-[16px] p-6 h-full`}
 					>
 						<Icon icon={feature.icon} className="size-[143px]" />

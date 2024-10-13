@@ -2,12 +2,11 @@ import React, { useRef } from 'react'
 import Carousel from 'react-multi-carousel'
 import 'react-multi-carousel/lib/styles.css'
 import { motion, useInView } from 'framer-motion'
-import pict from '../../assets/images/c1.png' // Pastikan path ini benar
-import pict2 from '../../assets/images/c2.png' // Pastikan path ini benar
-import pict3 from '../../assets/images/c3.png' // Pastikan path ini benar
+import pict from '../../assets/images/c1.png'
+import pict2 from '../../assets/images/c2.png'
+import pict3 from '../../assets/images/c3.png'
 
-const CaseStudyCarousel = () => {
-	// Array untuk menyimpan data section
+const CaseStudy = () => {
 	const sections = [
 		{
 			title: 'Tugas Sekolah Selesai Lebih Mudah',
@@ -29,7 +28,6 @@ const CaseStudyCarousel = () => {
 		},
 	]
 
-	// Pengaturan carousel
 	const responsive = {
 		superLarge: {
 			breakpoint: { max: 4000, min: 3000 },
@@ -49,9 +47,7 @@ const CaseStudyCarousel = () => {
 		},
 	}
 
-	// useRef untuk melacak carousel container
 	const carouselRef = useRef(null)
-	// Menggunakan useInView untuk mendeteksi apakah elemen terlihat di layar
 	const isCarouselInView = useInView(carouselRef, { once: true })
 
 	return (
@@ -104,4 +100,4 @@ const CaseStudyCarousel = () => {
 	)
 }
 
-export default CaseStudyCarousel
+export default CaseStudy

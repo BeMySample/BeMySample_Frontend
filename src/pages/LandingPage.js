@@ -2,17 +2,16 @@ import React from 'react'
 import { Helmet } from 'react-helmet'
 import Hero from '../components/LandingPage/Hero'
 import WhyBeMySample from '../components/LandingPage/WhyBeMySample'
-// import CaseStudy from '../components/LandingPage/CaseStudy'
 import Packages from '../components/LandingPage/Packages'
 import Footer from '../components/LandingPage/Footer'
-import CaseStudyCarousel from '../components/LandingPage/CaseStudy'
+import CaseStudy from '../components/LandingPage/CaseStudy'
 
 const LandingPage = () => {
   return (
     <div>
       <Hero />
       <WhyBeMySample />
-      <CaseStudyCarousel />
+      <CaseStudy />
       <Packages />
       <Footer />
 

@@ -4,14 +4,12 @@ import bgRect from '../../assets/images/Rectangle.png'
 import circlePict from '../../assets/images/footer_circle_round.png'
 
 const Footer = () => {
-	// Refs to track if elements are in view
 	const bgRectRef = useRef(null)
 	const textRef = useRef(null)
 	const buttonRef = useRef(null)
 	const circlePictRef = useRef(null)
 	const footerTextRef = useRef(null)
 
-	// Check if elements are in view
 	const isBgRectInView = useInView(bgRectRef, { once: true })
 	const isTextInView = useInView(textRef, { once: true })
 	const isButtonInView = useInView(buttonRef, { once: true })
@@ -20,7 +18,6 @@ const Footer = () => {
 
 	return (
 		<div className="relative flex flex-col items-end justify-end w-full bg-white h-[703px] mt-40">
-			{/* Background Image Animation */}
 			<motion.img
 				ref={bgRectRef}
 				className="absolute bottom-0 w-full h-auto object-cover rounded-xl"
@@ -33,7 +30,6 @@ const Footer = () => {
 
 			<div className="relative flex flex-col items-end w-full p-4 gap-20 px-20">
 				<div className="flex flex-row items-center justify-center w-full">
-					{/* Text and Button Animation */}
 					<motion.div
 						ref={textRef}
 						className="flex flex-col items-start w-full gap-[16px]"
@@ -61,7 +57,6 @@ const Footer = () => {
 						</motion.button>
 					</motion.div>
 
-					{/* Circle Picture Animation */}
 					<motion.div
 						ref={circlePictRef}
 						className="w-fit"
@@ -77,7 +72,6 @@ const Footer = () => {
 					</motion.div>
 				</div>
 
-				{/* Footer Text and Contact Button */}
 				<div className="flex flex-row items-center gap-8 pb-20">
 					<motion.p
 						ref={footerTextRef}
