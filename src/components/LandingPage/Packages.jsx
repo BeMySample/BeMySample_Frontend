@@ -13,41 +13,94 @@ const featuresList = [
 	'Layanan pelanggan',
 ]
 
-const packagesData = [
-	{
-		name: 'Paket Gratis',
-		price: 'Rp0',
-		perMonth: '',
-		bgColor: '',
-		features: [true, true, true, true, '0', false, false, 'E-mail'],
-	},
-	{
-		name: 'Paket Premium',
-		price: 'Rp20.000',
-		perMonth: '/bulan',
-		bgColor: 'bg-[#2073DB]',
-		altBgColor: 'bg-[#1E63BC]',
-		features: [true, true, true, true, '100', true, true, 'E-mail, Live Chat'],
-	},
-	{
-		name: 'Paket Plus',
-		price: 'Rp120.000',
-		perMonth: '/bulan',
-		bgColor: '',
-		features: [
-			true,
-			true,
-			true,
-			true,
-			'1000',
-			true,
-			true,
-			'Telepon, E-mail, Live Chat',
-		],
-	},
-]
+const translations = {
+	en: {
+		freePackage: 'Free Package',
+		premiumPackage: 'Premium Package',
+		plusPackage: 'Plus Package',
 
-const Packages = () => {
+		choiceForYou: 'Choice for You',
+		variousOptions: 'Various options to suit your needs',
+
+		makeSurvey: 'Make survey',
+		publishSurvey: 'Publish survey',
+		surveyAnalysisDashboard: 'Survey analysis dashboard',
+		antiSpamValidation: 'Anti-spam and response validation',
+		myPoinPerMonth: 'MyPoin given per month',
+		increaseExposure: 'Increase exposure',
+		aiAssistance: 'AI assistance',
+		customerService: 'Customer service',
+		month: '/month',
+		csPlusPackage: 'Phone, E-mail, Live Chat',
+
+		subscribeNow: 'Subscribe Now',
+	},
+	id: {
+		freePackage: 'Paket Gratis',
+		premiumPackage: 'Paket Premium',
+		plusPackage: 'Paket Plus',
+
+		choiceForYou: 'Pilihan untuk Anda',
+		variousOptions: 'Berbagai pilihan untuk disesuaikan dengan kebutuhan',
+
+		makeSurvey: 'Membuat survei',
+		publishSurvey: 'Publikasi survei',
+		surveyAnalysisDashboard: 'Dashboard analisis hasil survei',
+		antiSpamValidation: 'Anti-spam dan validasi respons',
+		myPoinPerMonth: 'MyPoin diberikan per bulan',
+		increaseExposure: 'Naikkan eksposur',
+		aiAssistance: 'Bantuan AI',
+		customerService: 'Layanan pelanggan',
+		month: '/bulan',
+		csPlusPackage: 'Telepon, E-mail, Live Chat',
+
+		subscribeNow: 'Berlangganan Sekarang',
+	},
+}
+
+const Packages = ({ language }) => {
+	const packagesData = [
+		{
+			name: translations[language].freePackage,
+			price: language === 'en' ? 'Free' : 'Gratis',
+			perMonth: '',
+			bgColor: '',
+			features: [true, true, true, true, '0', false, false, 'E-mail'],
+		},
+		{
+			name: translations[language].premiumPackage,
+			price: language === 'en' ? 'IDR20.000' : 'Rp20.000',
+			perMonth: translations[language].month,
+			bgColor: 'bg-[#2073DB]',
+			altBgColor: 'bg-[#1E63BC]',
+			features: [
+				true,
+				true,
+				true,
+				true,
+				'100',
+				true,
+				true,
+				'E-mail, Live Chat',
+			],
+		},
+		{
+			name: translations[language].plusPackage,
+			price: language === 'en' ? 'IDR120.000' : 'Rp120.000',
+			perMonth: translations[language].month,
+			bgColor: '',
+			features: [
+				true,
+				true,
+				true,
+				true,
+				'1000',
+				true,
+				true,
+				translations[language].csPlusPackage,
+			],
+		},
+	]
 	return (
 		<div className="flex flex-col items-center justify-center w-full py-20 gap-[49px] px-6 bg-white">
 			<motion.div
@@ -56,9 +109,11 @@ const Packages = () => {
 				transition={{ duration: 0.5 }}
 				className="flex flex-col items-center"
 			>
-				<p className="text-[45px] text-center">Pilihan untuk Anda</p>
+				<p className="text-[45px] text-center">
+					{translations[language].choiceForYou}
+				</p>
 				<p className="text-[16pt] text-center">
-					Berbagai pilihan untuk disesuaikan dengan kebutuhan
+					{translations[language].variousOptions}
 				</p>
 			</motion.div>
 
@@ -82,7 +137,7 @@ const Packages = () => {
 									}`}
 								>
 									{pkg.name}
-									{pkg.name === 'Paket Premium' && (
+									{pkg.name === translations[language].premiumPackage && (
 										<div className="absolute top-[-10px] right-[-10px] flex items-center justify-center size-14 rounded-full bg-[#00008B] z-10">
 											<Icon
 												icon="mdi:thumb-up"
@@ -107,7 +162,7 @@ const Packages = () => {
 									<td
 										key={index}
 										className={`p-2 md:p-4 text-center ${
-											pkg.name === 'Paket Premium'
+											pkg.name === translations[language].premiumPackage
 												? idx % 2 === 0
 													? pkg.altBgColor
 													: pkg.bgColor
@@ -123,7 +178,7 @@ const Packages = () => {
 															: 'ep:close-bold'
 													}
 													className={`size-[25pt] ${
-														pkg.name === 'Paket Premium'
+														pkg.name === translations[language].premiumPackage
 															? 'text-white'
 															: 'text-black'
 													}`}
@@ -132,7 +187,7 @@ const Packages = () => {
 										) : (
 											<span
 												className={`${
-													pkg.name === 'Paket Premium'
+													pkg.name === translations[language].premiumPackage
 														? 'text-white'
 														: 'text-black'
 												} text-[16pt]`}
@@ -144,7 +199,7 @@ const Packages = () => {
 								))}
 							</tr>
 						))}
-						<div className='h-6' />
+						<div className="h-6" />
 						<tr
 							className={`mt-4 ${
 								featuresList.length % 2 === 0 ? 'bg-white' : ''
@@ -157,7 +212,7 @@ const Packages = () => {
 									className={`px-[13px] py-[24px] mt-4 text-center font-bold font-inter text-[29pt] ${
 										pkg.bgColor
 									} ${pkg.bgColor ? 'rounded-[16pt]' : ''} ${
-										pkg.name === 'Paket Premium'
+										pkg.name === translations[language].premiumPackage
 											? 'text-white'
 											: 'text-[#2073DB]'
 									}`}
@@ -176,7 +231,7 @@ const Packages = () => {
 				whileTap={{ scale: 0.95 }}
 				transition={{ duration: 0.2 }}
 			>
-				Berlangganan Sekarang
+				{translations[language].subscribeNow}
 			</motion.button>
 		</div>
 	)

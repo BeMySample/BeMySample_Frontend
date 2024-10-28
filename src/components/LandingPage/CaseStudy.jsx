@@ -6,24 +6,42 @@ import pict from '../../assets/images/c1.png'
 import pict2 from '../../assets/images/c2.png'
 import pict3 from '../../assets/images/c3.png'
 
-const CaseStudy = () => {
+const translations = {
+	en: {
+		title: 'Case Study',
+		deepObservation: 'Deeper and More Varied Observation',
+		descDeepObservation: 'A small quantity of data affects the results of your final assignment observation. With BeMySample, you can attract potential respondents who are your target by using MyPoin',
+		moreEvocativeBackground: 'More Evocative Background',
+		descMoreEvocativeBackground: 'With abundant supporting data, your statements will be more convincing, of course with data validity guarantee',
+		easierCompletingSchoolTask: 'Easier Completing School Assignment',
+		descEasierCompletingSchoolTask: 'Observation data can be processed more quickly with a high number of respondents who want to contribute',
+	},
+	id: {
+		title: 'Studi Kasus',
+		deepObservation: 'Observasi Lebih Mendalam dan Variatif',
+		descDeepObservation: 'Kuantitas data yang sedikit berpengaruh buruk hasil observasi tugas akhir Anda. Dengan BeMySample, Anda dapat menarik calon responden yang menjadi sasaran Anda dengan menggunakan MyPoin',
+		moreEvocativeBackground: 'Latar Belakang Lebih Menggugah',
+		descMoreEvocativeBackground: 'Dengan data pendukung yang melimpah, pernyataan Anda akan makin meyakinkan, tentunya dengan jaminan validitas data',
+		easierCompletingSchoolTask: 'Tugas Sekolah Selesai Lebih Mudah',
+		descEasierCompletingSchoolTask: 'Observasi data dapat diolah lebih cepat dengan tingginya jumlah responden yang ingin berkontribusi',
+	}
+}
+
+const CaseStudy = ({ language }) => {
 	const sections = [
 		{
-			title: 'Tugas Sekolah Selesai Lebih Mudah',
-			description:
-				'Observasi data dapat diolah lebih cepat dengan tingginya jumlah responden yang ingin berkontribusi',
+			title: translations[language].easierCompletingSchoolTask,
+			description: translations[language].descEasierCompletingSchoolTask,
 			image: pict2,
 		},
 		{
-			title: 'Observasi Lebih Mendalam dan Variatif',
-			description:
-				'Kuantitas data yang sedikit berpengaruh buruk hasil observasi tugas akhir Anda. Dengan BeMySample, Anda dapat menarik calon responden yang menjadi sasaran Anda dengan menggunakan MyPoin',
+			title: translations[language].deepObservation,
+			description: translations[language].descDeepObservation,
 			image: pict,
 		},
 		{
-			title: 'Latar Belakang Lebih Menggugah',
-			description:
-				'Dengan data pendukung yang melimpah, pernyataan Anda akan makin meyakinkan, tentunya dengan jaminan validitas data',
+			title: translations[language].moreEvocativeBackground,
+			description: translations[language].descMoreEvocativeBackground,
 			image: pict3,
 		},
 	]
@@ -53,7 +71,7 @@ const CaseStudy = () => {
 	return (
 		<div
 			ref={carouselRef}
-			className="w-full py-10 gap-6 px-6 bg-gradient-to-r from-[#6AA9F0] to-[#2073DB] text-center"
+			className="w-full py-10 gap-6 px-20 bg-gradient-to-r from-[#6AA9F0] to-[#2073DB] text-center"
 		>
 			<motion.p
 				className="text-[45px] text-white mb-10"
@@ -61,7 +79,7 @@ const CaseStudy = () => {
 				animate={isCarouselInView ? { opacity: 1, y: 0 } : {}}
 				transition={{ duration: 0.8 }}
 			>
-				Studi Kasus
+				{translations[language].title}
 			</motion.p>
 
 			<Carousel
@@ -87,8 +105,8 @@ const CaseStudy = () => {
 							alt={section.title}
 							className="h-auto w-auto"
 						/>
-						<div className="flex flex-col items-start">
-							<p className="text-[32px] font-bold font-inter">
+						<div className="flex flex-col items-center text-center">
+							<p className="text-[32px] font-bold font-inter text-center">
 								{section.title}
 							</p>
 							<p className="text-[16px] font-inter">{section.description}</p>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Helmet } from 'react-helmet'
 import Hero from '../components/LandingPage/Hero'
 import WhyBeMySample from '../components/LandingPage/WhyBeMySample'
@@ -7,19 +7,22 @@ import Footer from '../components/LandingPage/Footer'
 import CaseStudy from '../components/LandingPage/CaseStudy'
 
 const LandingPage = () => {
-  return (
-    <div>
-      <Hero />
-      <WhyBeMySample />
-      <CaseStudy />
-      <Packages />
-      <Footer />
+	const storedLanguage = localStorage.getItem('language') || 'id'
+	const [language, setLanguage] = useState(storedLanguage)
 
-      <Helmet>
-        <title>BeMySample: Reliability at Reach</title>
-      </Helmet>
-    </div>
-  )
+	return (
+		<div>
+			<Hero language={language} />
+			<WhyBeMySample language={language} />
+			<CaseStudy language={language} />
+			<Packages language={language} />
+			<Footer language={language} />
+
+			<Helmet>
+				<title>BeMySample: Reliability at Reach</title>
+			</Helmet>
+		</div>
+	)
 }
 
 export default LandingPage

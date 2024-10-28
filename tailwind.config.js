@@ -6,7 +6,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'header': ['Gill Sans MT', 'sans-serif'],
+        'gili': ['Gill Sans MT', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
         'poppins': ['Poppins', 'sans-serif'],
       }

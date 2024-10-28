@@ -3,7 +3,22 @@ import { motion, useInView } from 'framer-motion'
 import bgRect from '../../assets/images/Rectangle.png'
 import circlePict from '../../assets/images/footer_circle_round.png'
 
-const Footer = () => {
+const translations = {
+	en: {
+		readyToLaunch: 'Ready to Launch?',
+		makeSurvey: 'Create Survey',
+		contactUs: 'Contact Us',
+		copyright: '© 2024 BeMySample. All Rights Reserved.',
+	},
+	id: {
+		readyToLaunch: 'Siap Meluncur?',
+		makeSurvey: 'Buat Survei',
+		contactUs: 'Hubungi Kami',
+		copyright: '© 2024 BeMySample. Seluruh Hak Cipta Dilindungi.',
+	}
+}
+
+const Footer = ({ language }) => {
 	const bgRectRef = useRef(null)
 	const textRef = useRef(null)
 	const buttonRef = useRef(null)
@@ -43,7 +58,7 @@ const Footer = () => {
 							animate={isTextInView ? { opacity: 1 } : {}}
 							transition={{ delay: 0.5, duration: 1 }}
 						>
-							Siap Meluncur?
+							{translations[language].readyToLaunch}
 						</motion.p>
 						<motion.button
 							ref={buttonRef}
@@ -53,7 +68,7 @@ const Footer = () => {
 							animate={isButtonInView ? {} : { scale: 0 }}
 							transition={{ duration: 0.2 }}
 						>
-							Buat Survei
+							{translations[language].makeSurvey}
 						</motion.button>
 					</motion.div>
 
@@ -88,7 +103,7 @@ const Footer = () => {
 						whileTap={{ scale: 0.95 }}
 						transition={{ duration: 0.2 }}
 					>
-						Hubungi Kami
+						{translations[language].contactUs}
 					</motion.button>
 				</div>
 			</div>
