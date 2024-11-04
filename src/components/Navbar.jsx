@@ -38,7 +38,7 @@ const NavBar = ({ childrenLeft, childrenCenter, childrenRight }) => {
     >
       <div className="ml-5 flex items-center">{childrenLeft}</div>
 
-      {childrenCenter}
+      {window.innerWidth > 768 && childrenCenter}
 
       <div className="mr-5 flex items-center gap-2">{childrenRight}</div>
     </motion.nav>

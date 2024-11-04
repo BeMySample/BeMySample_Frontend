@@ -72,7 +72,7 @@ const Content = () => {
   return (
     <>
       {/* Navbar hanya ditampilkan jika bukan di halaman login */}
-      {location.pathname === "/" && (
+      {(location.pathname === "/" || location.pathname === "/dashboard") && (
         <NavBar
           childrenLeft={
             <Link to="/">
@@ -201,7 +201,7 @@ const Content = () => {
           childrenLeft={
             <Breadcrumbs
               items={[
-                { label: "Surveiku", link: "/survey" },
+                { label: "Surveiku", link: "/dashboard" },
                 { label: "Survei Baru", link: "/survey/edit" },
               ]}
               separator="mdi:chevron-right"

@@ -17,7 +17,7 @@ const RightSidebar = ({
   activeSection,
 }) => {
   return (
-    <aside className="w-1/5 bg-gray-200 p-4">
+    <aside className="w-1/5 bg-neutral-100 p-4">
       <div className="space-y-6 font-inter text-sm text-gray-700">
         {/* Section Konten dengan Divider */}
         <div className="flex items-center space-x-2">

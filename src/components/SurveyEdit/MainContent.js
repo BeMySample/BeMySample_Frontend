@@ -48,7 +48,7 @@ const MainContent = ({
 
   return (
     <main
-      className="flex-grow p-8 flex justify-center items-center shadow-md m-4 rounded-lg"
+      className="flex-grow p-8 flex justify-center items-center shadow-md m-4 rounded-2xl"
       style={{
         backgroundColor: bgColor,
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",

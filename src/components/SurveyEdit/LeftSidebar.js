@@ -14,7 +14,7 @@ const LeftSidebar = ({
   handleRenameSubmit,
 }) => {
   return (
-    <aside className="w-1/5 bg-[#F5F5F5] p-4 overflow-y-auto max-h-[90vh]">
+    <aside className="w-1/5 bg-neutral-100 p-4 overflow-y-auto max-h-[90vh]">
       <ul className="space-y-4">
         {sections.map((section) => (
           <li
