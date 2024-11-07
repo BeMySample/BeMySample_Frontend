@@ -28,7 +28,7 @@ const NavBar = ({ childrenLeft, childrenCenter, childrenRight }) => {
 
   return (
     <motion.nav
-      className={`bg-opacity-70 backdrop-blur-md p-2 py-3 justify-between flex items-center fixed w-full z-50 bg-white font-inter ${
+      className={`bg-opacity-70 backdrop-blur-md p-2 py-3 justify-between flex items-center fixed w-full z-[9999] bg-white font-inter ${
         scrolled ? "shadow-lg" : ""
       }`}
       initial={{ opacity: 0, y: -10 }}

@@ -126,7 +126,7 @@ const Dashboard = () => {
 				<Link to="/survey/edit">
 					<motion.button
 						className="flex flex-col items-center w-64 py-[24px] px-[56px] text-[#2073DB] border-4 border-[#2073DB] hover:bg-[#2073DB] hover:border-[#2073DB] hover:text-white rounded-[16px]"
-						whileHover={{ scale: 1.1 }}
+						whileHover={{ scale: 1.05 }}
 					>
 						<Icon icon="ic:outline-plus" className="text-[66px]" />
 						<p className="font-inter text-[18px]">Buat Sendiri</p>
@@ -134,7 +134,7 @@ const Dashboard = () => {
 				</Link>
 				<motion.button
 					className="flex flex-col items-center w-64 py-[24px] px-[56px] text-white border-4 border-[#2073DB] bg-[#2073DB] hover:bg-[#235ea5] hover:border-[#235ea5] rounded-[16px]"
-					whileHover={{ scale: 1.1 }}
+					whileHover={{ scale: 1.05 }}
 				>
 					<Icon icon="mingcute:ai-fill" className="text-[66px]" />
 					<p className="font-inter text-[18px]">Buat dengan AI</p>
