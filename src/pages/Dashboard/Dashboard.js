@@ -1,147 +1,238 @@
 import { Icon } from '@iconify/react'
-import React from 'react'
-import { motion } from 'framer-motion'
-import C1 from '../../assets/images/SurveyCover.png'
+import React, { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Cover1Contribution from '../../assets/images/Cover1Contribution.png'
 import Cover2Contribution from '../../assets/images/Cover2Contribution.png'
 import TemplateContribution from '../../assets/images/TemplateContribution.png'
 import { Helmet } from 'react-helmet'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import SurveyCard from '../../components/Dashboard/SurveyCard'
+import ContributionCard from '../../components/Dashboard/ContributionCard'
 
-const SurveyCard = ({
-	title,
-	respondents,
-	updated,
-	used,
-	max,
-	image,
-	status,
-}) => {
+const LOCAL_STORAGE_KEY = 'surveyData'
+
+const generateUniqueID = () => {
 	return (
-		<motion.div
-			className="flex flex-row items-center justify-between bg-[#F5F5F5] rounded-r-[16px] pr-[16px] w-full md:w-auto"
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.5 }}
-		>
-			<div className="flex flex-row items-center">
-				<div className="relative">
-					<img
-						src={image}
-						alt=""
-						className="h-[94px] w-[100%] md:w-[244px] object-cover rounded-l-[16px]"
-					/>
-					<p
-						className={`absolute bottom-0 right-0 w-[116px] h-[35px] text-center flex items-center justify-center gap-2 font-inter z-10 text-white text-xs rounded-tl-lg ${
-							status === 'open'
-								? 'bg-[#1F38DB]'
-								: status === 'closed'
-								? 'bg-[#EB221E]'
-								: 'bg-[#5A5A5A]'
-						}`}
-					>
-						{status === 'open' && 'Dibuka'}
-						{status === 'closed' && 'Terhenti'}
-						{status === 'draft' && 'Draft'}
-					</p>
-				</div>
-				<div className="px-4 md:px-8">
-					<p className="font-bold font-inter text-[16px]">{title}</p>
-					<div className="flex flex-row gap-[16px] flex-wrap">
-						<div className="flex flex-row items-center gap-2 font-inter">
-							<Icon
-								icon="material-symbols:person"
-								className="text-[13.33px] text-[#595959]"
-							/>
-							<p className="text-[12px]">{respondents} responden</p>
-						</div>
-						<div className="flex flex-row items-center gap-2 font-inter">
-							<Icon
-								icon="mdi:clock"
-								className="text-[13.33px] text-[#595959]"
-							/>
-							<p className="text-[12px]">{updated}</p>
-						</div>
-						{used === 0 && max === 0 ? (
-							<div className="flex flex-row items-center gap-2 font-inter text-[#595959]">
-								<Icon icon="akar-icons:coin" className="text-[13.33px]" />
-								<p className="text-[12px]">Belum dialokasikan</p>
-							</div>
-						) : (
-							<div
-								className={`flex flex-row items-center gap-2 font-inter ${
-									used === max && 'text-red-500'
-								}`}
-							>
-								<Icon icon="akar-icons:coin" className="text-[13.33px]" />
-								<p className="text-[12px]">
-									Terpakai {used} dari {max}
-								</p>
-							</div>
-						)}
-					</div>
-				</div>
-			</div>
-			<Icon
-				icon="bi:three-dots-vertical"
-				className="text-[#595959] text-[36px] cursor-pointer hover:bg-zinc-200 rounded-full p-2"
-			/>
-		</motion.div>
+		Math.random().toString(36).substr(2, 10) +
+		Math.random().toString(36).substr(2, 10)
 	)
 }
 
-const ContributionCard = ({ title, updated, coins, image }) => {
-	return (
-		<motion.div
-			className="flex flex-col items-center justify-between bg-[#F5F5F5] rounded-2xl w-full"
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.5 }}
-		>
-			<img
-				src={image}
-				alt=""
-				className="h-[98px] w-full object-cover rounded-t-2xl"
-			/>
-			<div className="px-6 py-4 flex flex-col items-start justify-start w-full">
-				<p className="font-bold font-inter text-[16px]">{title}</p>
-				<div className="flex flex-row gap-[16px]">
-					<div className="flex flex-row items-center gap-2 font-inter">
-						<Icon
-							icon="akar-icons:coin"
-							className="text-[13.33px] text-[#595959]"
-						/>
-						<p className="text-[12px]">Dapatkan {coins}</p>
-					</div>
-				</div>
-			</div>
-		</motion.div>
-	)
+const getFormattedDate = () => {
+	const date = new Date()
+	const options = {
+		day: '2-digit',
+		month: 'long',
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: false,
+		timeZone: 'Asia/Jakarta',
+	}
+
+	const formattedDate = new Intl.DateTimeFormat('id-ID', options).format(date)
+	return `${formattedDate} WIB`
+}
+
+const saveNewSurveyToLocalStorage = (surveyId) => {
+	const initialSurveyData = {
+		[surveyId]: {
+			sections: [
+				{
+					id: 'welcome',
+					label: 'Selamat datang',
+					icon: 'hugeicons:start-up-02',
+				},
+				{
+					id: 'thankYou',
+					label: 'Terima Kasih',
+					icon: 'icon-park-outline:bye',
+				},
+			],
+			surveyTitle: 'Survei Baru',
+			activeSection: 'welcome',
+			data: {
+				welcome: {
+					contentText: 'Selamat datang',
+					buttonText: 'Mulai',
+					backgroundImage: null,
+					bgColor: '#FFFFFF',
+					buttonColor: '#1F38DB',
+					textColor: '#000000',
+					title: 'Isi Judul di sini',
+					description: 'Isi deskripsi di sini',
+				},
+				thankYou: {
+					contentText: 'Closing',
+					buttonText: 'Selesai',
+					backgroundImage: null,
+					bgColor: '#FFFFFF',
+					buttonColor: '#1F38DB',
+					textColor: '#000000',
+					title: 'Isi Judul di sini',
+					description: 'Isi deskripsi di sini',
+				}
+			},
+			updated: getFormattedDate(),
+			status: 'draft',
+			respondents: 0,
+		},
+	}
+
+	const existingData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
+	const updatedData = { ...existingData, ...initialSurveyData }
+	localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedData))
 }
 
 const Dashboard = () => {
+	const navigate = useNavigate()
+	const [surveys, setSurveys] = useState([])
+	const [activeMenuId, setActiveMenuId] = useState(null)
+	const [loadingPopup, setLoadingPopup] = useState(false)
+	const [showDeleteModal, setShowDeleteModal] = useState(false)
+	const [selectedSurveyId, setSelectedSurveyId] = useState(null)
+
+	useEffect(() => {
+		const storedSurveys =
+			JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
+		setSurveys(
+			Object.keys(storedSurveys).map((id) => ({ id, ...storedSurveys[id] }))
+		)
+	}, [])
+
+	const handleCreateSurvey = () => {
+		setLoadingPopup(true) // Show the loading pop-up
+		setTimeout(() => {
+			const newSurveyId = generateUniqueID()
+			saveNewSurveyToLocalStorage(newSurveyId)
+			setLoadingPopup(false) // Hide the pop-up after processing
+			navigate(`/survey/edit/${newSurveyId}`)
+		}, 2000) // Simulate loading time
+	}
+
+	const handleEdit = (id) => {
+		navigate(`/survey/edit/${id}`)
+		setActiveMenuId(null)
+	}
+
+	const handleDelete = (id) => {
+		setSelectedSurveyId(id)
+		setShowDeleteModal(true) // Show the custom delete modal
+	}
+
+	const confirmDelete = () => {
+		const updatedSurveys = {
+			...JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)),
+		}
+		delete updatedSurveys[selectedSurveyId]
+		localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedSurveys))
+		setSurveys(
+			Object.keys(updatedSurveys).map((key) => ({
+				id: key,
+				...updatedSurveys[key],
+			}))
+		)
+		setActiveMenuId(null)
+		setShowDeleteModal(false) // Hide the modal
+	}
+
+	const toggleMenu = (id) => {
+		setActiveMenuId(activeMenuId === id ? null : id)
+	}
+
 	return (
-		<div className="w-full bg-white pt-[120px] flex flex-col items-center px-4 md:px-14">
+		<div className="w-full bg-white pt-[120px] flex flex-col items-center px-4 md:px-14 font-inter">
 			<div className="flex flex-row items-center justify-center w-full gap-[16px] flex-wrap">
-				<Link to="/survey/edit">
-					<motion.button
-						className="flex flex-col items-center w-64 py-[24px] px-[56px] text-[#2073DB] border-4 border-[#2073DB] hover:bg-[#2073DB] hover:border-[#2073DB] hover:text-white rounded-[16px]"
-						whileHover={{ scale: 1.05 }}
-					>
-						<Icon icon="ic:outline-plus" className="text-[66px]" />
-						<p className="font-inter text-[18px]">Buat Sendiri</p>
-					</motion.button>
-				</Link>
+				<motion.button
+					onClick={handleCreateSurvey}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					className="flex flex-col items-center w-64 py-[24px] px-[56px] text-[#2073DB] border-4 border-[#2073DB] hover:bg-[#2073DB] hover:border-[#2073DB] hover:text-white rounded-[16px]"
+				>
+					<Icon icon="ic:outline-plus" className="text-[66px]" />
+					<p className="font-inter text-[18px]">Buat Sendiri</p>
+				</motion.button>
 				<motion.button
 					className="flex flex-col items-center w-64 py-[24px] px-[56px] text-white border-4 border-[#2073DB] bg-[#2073DB] hover:bg-[#235ea5] hover:border-[#235ea5] rounded-[16px]"
 					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
 				>
 					<Icon icon="mingcute:ai-fill" className="text-[66px]" />
 					<p className="font-inter text-[18px]">Buat dengan AI</p>
 				</motion.button>
 			</div>
 
+			{/* Overlay Pop-up */}
+			<AnimatePresence>
+				{loadingPopup && (
+					<motion.div
+						className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+					>
+						<motion.div
+							className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center"
+							initial={{ scale: 0.8, opacity: 0 }}
+							animate={{ scale: 1, opacity: 1 }}
+							exit={{ scale: 0.8, opacity: 0 }}
+							transition={{ duration: 0.3 }}
+						>
+							<Icon
+								icon="eos-icons:loading"
+								className="text-5xl animate-spin text-blue-600 mb-4"
+							/>
+							<p className="text-center text-gray-700">
+								Sedang membuat survei baru...
+							</p>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+
+			<AnimatePresence>
+				{showDeleteModal && (
+					<motion.div
+						className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+					>
+						<motion.div
+							className="bg-white p-6 rounded-lg shadow-lg w-[90%] md:w-[400px]"
+							initial={{ scale: 0.8 }}
+							animate={{ scale: 1 }}
+							exit={{ scale: 0.8 }}
+							transition={{ duration: 0.3 }}
+						>
+							<h2 className="text-lg font-semibold text-gray-800 mb-4">
+								Confirm Deletion
+							</h2>
+							<p className="text-gray-600 mb-6">
+								Are you sure you want to delete this survey?
+							</p>
+							<div className="flex justify-end gap-4">
+								<button
+									onClick={() => setShowDeleteModal(false)}
+									className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+								>
+									Cancel
+								</button>
+								<button
+									onClick={confirmDelete}
+									className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+								>
+									Delete
+								</button>
+							</div>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+
 			<div className="flex flex-col lg:flex-row gap-[14px] items-start justify-start w-full mt-8">
+				{/* Survey and Contribution sections here */}
 				<div className="w-full py-10 flex flex-col items-start gap-4">
 					<div className="w-full">
 						<p className="text-[18px] w-full font-inter">Survei Saya</p>
@@ -150,36 +241,22 @@ const Dashboard = () => {
 						</p>
 					</div>
 					<div className="flex flex-col gap-[16px] w-full">
-						<SurveyCard
-							title="Survei Kepuasan Pelanggan"
-							respondents={190}
-							updated="10 Oktober 2024"
-							used={38000}
-							max={190000}
-							image={C1}
-							status={'open'}
-						/>
-						<SurveyCard
-							title="Lorem Ipsum"
-							respondents={1}
-							updated="10 Oktober 2024"
-							used={200}
-							max={200}
-							image={C1}
-							status={'closed'}
-						/>
-						<SurveyCard
-							title="Lorem Ipsum"
-							respondents={190}
-							updated="10 Oktober 2024"
-							used={0}
-							max={0}
-							image={C1}
-							status={'draft'}
-						/>
+						{surveys.map((survey) => (
+							<SurveyCard
+								key={survey.id}
+								title={survey.surveyTitle}
+								respondents={survey.respondents}
+								updated={survey.updated}
+								image={survey.image || 'default_image_path'}
+								status={survey.status}
+								isActive={activeMenuId === survey.id}
+								onToggleMenu={() => toggleMenu(survey.id)}
+								onEdit={() => handleEdit(survey.id)}
+								onDelete={() => handleDelete(survey.id)}
+							/>
+						))}
 					</div>
 				</div>
-
 				<div className="w-full py-10 flex flex-col items-start gap-4">
 					<div className="flex flex-row items-center justify-between w-full">
 						<div>
