@@ -137,7 +137,7 @@ const Preview = () => {
 								to={`/survey/${path}/${id}`}
 								onClick={() => handleMenuClick(label)}
 								className={`relative font-normal focus:outline-none ${
-									activeMenu === label ? 'text-blue-600' : 'text-gray-600'
+									activeMenu === label ? 'text-blue-600 font-semibold' : 'text-gray-600'
 								}`}
 							>
 								{label}

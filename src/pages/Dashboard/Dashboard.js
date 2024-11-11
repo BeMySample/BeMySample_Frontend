@@ -72,7 +72,7 @@ const saveNewSurveyToLocalStorage = (surveyId) => {
 					textColor: '#000000',
 					title: 'Isi Judul di sini',
 					description: 'Isi deskripsi di sini',
-				}
+				},
 			},
 			updated: getFormattedDate(),
 			status: 'draft',
@@ -88,6 +88,7 @@ const saveNewSurveyToLocalStorage = (surveyId) => {
 const Dashboard = () => {
 	const navigate = useNavigate()
 	const [surveys, setSurveys] = useState([])
+	const [contributions, setContributions] = useState([])
 	const [activeMenuId, setActiveMenuId] = useState(null)
 	const [loadingPopup, setLoadingPopup] = useState(false)
 	const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -207,23 +208,23 @@ const Dashboard = () => {
 							transition={{ duration: 0.3 }}
 						>
 							<h2 className="text-lg font-semibold text-gray-800 mb-4">
-								Confirm Deletion
+								Konfirmasi Hapus
 							</h2>
 							<p className="text-gray-600 mb-6">
-								Are you sure you want to delete this survey?
+								Apakah Anda yakin ingin menghapus survei ini?
 							</p>
 							<div className="flex justify-end gap-4">
 								<button
 									onClick={() => setShowDeleteModal(false)}
 									className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
 								>
-									Cancel
+									Batal
 								</button>
 								<button
 									onClick={confirmDelete}
 									className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
 								>
-									Delete
+									Hapus
 								</button>
 							</div>
 						</motion.div>
@@ -235,7 +236,7 @@ const Dashboard = () => {
 				{/* Survey and Contribution sections here */}
 				<div className="w-full py-10 flex flex-col items-start gap-4">
 					<div className="w-full">
-						<p className="text-[18px] w-full font-inter">Survei Saya</p>
+						<p className="text-[18px] w-full font-inter font-semibold">Survei Saya</p>
 						<p className="text-[12px] w-full text-[#757575] font-inter">
 							Lihat data respons atau sunting survei yang sudah Anda buat
 						</p>
@@ -255,12 +256,21 @@ const Dashboard = () => {
 								onDelete={() => handleDelete(survey.id)}
 							/>
 						))}
+						{surveys.length === 0 && (
+							<div className="border-2 rounded-2xl flex flex-col items-center justify-center w-full py-8">
+								<Icon
+									icon="bx:bxs-spreadsheet"
+									className="text-6xl text-gray-400"
+								/>
+								<p className="text-gray-400">Belum ada survei yang dibuat</p>
+							</div>
+						)}
 					</div>
 				</div>
-				<div className="w-full py-10 flex flex-col items-start gap-4">
+				<div className="w-full py-10 flex flex-col items-start gap-2">
 					<div className="flex flex-row items-center justify-between w-full">
 						<div>
-							<p className="text-[18px] font-inter">Berkontribusi</p>
+							<p className="text-[18px] font-semibold font-inter">Berkontribusi</p>
 							<p className="text-[12px] text-[#757575] font-inter">
 								Isi survei yang tersedia dan dapatkan MyPoin
 							</p>
@@ -274,25 +284,25 @@ const Dashboard = () => {
 						</motion.button>
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">
-						<ContributionCard
-							title="Kamu Tim Android atau iPhone?"
-							updated="10 Oktober 2024"
-							coins={200}
-							image={Cover1Contribution}
-						/>
-						<ContributionCard
-							title="Gimana Kebiasaanmu di Perkuliahan?"
-							updated="10 Oktober 2024"
-							coins={200}
-							image={Cover2Contribution}
-						/>
-						<ContributionCard
-							title="Lorem ipsum dolor sit amet consectur"
-							updated="10 Oktober 2024"
-							coins={200}
-							image={TemplateContribution}
-						/>
+						{contributions.map((contribution) => (
+							<ContributionCard
+								key={contribution.id}
+								title={contribution.title}
+								updated={contribution.updated}
+								coins={contribution.coins}
+								image={contribution.image}
+							/>
+						))}
 					</div>
+					{contributions.length === 0 && (
+						<div className="border-2 rounded-2xl flex flex-col items-center justify-center w-full py-8">
+							<Icon
+								icon="bx:bxs-coin-stack"
+								className="text-6xl text-gray-400"
+							/>
+							<p className="text-gray-400">Belum ada kontribusi</p>
+						</div>
+					)}
 				</div>
 			</div>
 
