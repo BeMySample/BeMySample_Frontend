@@ -1,16 +1,17 @@
-// MainContent.js
 import React from 'react'
-import WelcomeContent from './Templates/Welcome'
-import ShortText from './Templates/ShortText'
-import Time from './Templates/Time'
-import Dropdown from './Templates/Dropdown'
-import MultipleChoice from './Templates/MultipleChoice'
-import Quote from './Templates/Quote'
-import LongText from './Templates/LongText'
-import LikertScale from './Templates/LikertScale'
-import Closing from './Templates/Closing'
+import WelcomeContent from '../Templates/Welcome'
+import ShortText from '../Templates/ShortText'
+import Time from '../Templates/Time'
+import Dropdown from '../Templates/Dropdown'
+import MultipleChoice from '../Templates/MultipleChoice'
+import Quote from '../Templates/Quote'
+import LongText from '../Templates/LongText'
+import LikertScale from '../Templates/LikertScale'
+import Closing from '../Templates/Closing'
 
 const MainContent = ({
+	sections,
+	activeSection,
 	contentText,
 	textColor,
 	buttonColor,
@@ -58,18 +59,28 @@ const MainContent = ({
 		}
 	}
 
+	// Menghitung halaman saat ini berdasarkan index aktif
+	const currentPage =
+		sections.findIndex((section) => section.id === activeSection) + 1
+	const totalPages = sections.length
+
 	return (
 		<main
-			className="flex-grow p-8 flex justify-center items-center shadow-md m-4 rounded-2xl"
+			className="relative flex-grow p-8 flex flex-col justify-center items-center m-4 rounded-2xl"
 			style={{
 				backgroundColor: bgColor,
 				backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
 				backgroundSize: 'cover',
-				backgroundPosition: 'center', // Centers the background image
-				backgroundRepeat: 'no-repeat', // Prevents the background from repeating
+				backgroundPosition: 'center',
+				backgroundRepeat: 'no-repeat',
 			}}
 		>
 			{renderSectionContent()}
+
+			{/* Tampilan progress Page x/y */}
+			<div className="absolute bottom-3 left-3 bg-zinc-800 text-white px-3 py-2 rounded-xl text-sm">
+				{currentPage}/{totalPages}
+			</div>
 		</main>
 	)
 }

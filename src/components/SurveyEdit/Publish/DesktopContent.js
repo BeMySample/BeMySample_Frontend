@@ -9,7 +9,7 @@ import LongText from '../Templates/LongText'
 import LikertScale from '../Templates/LikertScale'
 import Closing from '../Templates/Closing'
 
-const MainContent = ({
+const DesktopContent = ({
 	contentText,
 	textColor,
 	buttonColor,
@@ -61,11 +61,11 @@ const MainContent = ({
 	}
 
 	return (
-		<div className="flex-grow flex justify-center items-center bg-[#f5f5f5] m-4 rounded-2xl">
+		<div className="mr-[50px] flex-grow flex justify-center items-center bg-[#f5f5f5] rounded-2xl w-full">
 			<div
-				className="p-8 rounded-2xl flex justify-center items-center"
+				className="p-8 border-2 border-zinc-400 shadow-md rounded-2xl flex justify-center items-center"
 				style={{
-					width: viewMode === 'mobile' ? '375px' : '100%',
+					minWidth: '1000px',
 					maxWidth: '1440px',
 					height: '720px',
 					backgroundColor: bgColor,
@@ -82,4 +82,4 @@ const MainContent = ({
 	)
 }
 
-export default MainContent
+export default DesktopContent

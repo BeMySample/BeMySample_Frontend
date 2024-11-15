@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useParams } from 'react-router-dom'
 
 const RightSidebar = ({
 	sections,
@@ -13,6 +14,8 @@ const RightSidebar = ({
 		setIsMobileView(mode === 'mobile')
 		toggleViewMode(mode) // Memanggil fungsi dari Preview.js untuk mengubah tampilan di MainContent
 	}
+
+	const { id } = useParams()
 
 	return (
 		<aside className="min-w-[350px] max-w-[500px] h-[10%] bg-neutral-100 p-4 flex flex-col justify-between">
@@ -81,7 +84,12 @@ const RightSidebar = ({
 			</div>
 
 			<div className="mt-6 space-y-2 h-[10%]">
-				<button className="w-full py-2 border border-blue-600 text-blue-600 rounded-lg flex items-center justify-center gap-2">
+				<button
+					className="w-full py-2 border border-blue-600 text-blue-600 rounded-lg flex items-center justify-center gap-2"
+					onClick={() =>
+						(window.location.pathname = `/survey/edit/${id}`)
+					}
+				>
 					<Icon icon="material-symbols:edit-outline" />
 					Sunting
 				</button>

@@ -1,3 +1,4 @@
+import { Icon } from '@iconify/react'
 import React from 'react'
 
 const Welcome = ({ textColor, buttonColor, buttonText, viewMode }) => (
@@ -23,13 +24,19 @@ const Welcome = ({ textColor, buttonColor, buttonText, viewMode }) => (
 			Mari mengisi survei ini!
 		</p>
 		<button
-			className={`py-2 px-6 rounded-lg ${
+			className={`py-2 px-4 rounded-lg flex flex-row gap-2 items-center justify-center ${
 				viewMode === 'mobile' ? 'text-base' : 'text-lg'
 			}`}
 			style={{ backgroundColor: buttonColor, color: '#FFFFFF' }}
 		>
+			<Icon icon="solar:play-bold" />
 			{buttonText}
 		</button>
+		<p>
+			<small className="text-xs">
+				atau tekan <kbd>Enter</kbd>
+			</small>
+		</p>
 	</div>
 )
 

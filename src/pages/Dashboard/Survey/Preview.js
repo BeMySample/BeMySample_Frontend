@@ -4,7 +4,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import RightSidebar from '../../../components/SurveyEdit/Preview/RightSidebar'
 import MainContent from '../../../components/SurveyEdit/Preview/MainContent'
 import NavBar from '../../../components/Navbar'
-import Breadcrumbs from '../../../components/Breadcrumbs'
+import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
 import ProfilePict from '../../../assets/images/profilepict.png'
 import { Icon } from '@iconify/react'
 import { Helmet } from 'react-helmet'
@@ -66,9 +66,13 @@ const Preview = () => {
 		if (surveyData) {
 			setSections(surveyData.sections || sections)
 			setSurveyTitle(surveyData.surveyTitle || 'Survei Baru')
-			setActiveSection(surveyData.activeSection || 'welcome')
+			
+			// Set the first section as active if there is no active section saved
+			const initialSection = surveyData.activeSection || sections[0].id
+			setActiveSection(initialSection)
 
-			const sectionData = surveyData.data[surveyData.activeSection] || {}
+			// Load other data as usual
+			const sectionData = surveyData.data[initialSection] || {}
 			setSurveyStatus(surveyData.status || 'draft')
 			setRespondents(surveyData.respondents || 0)
 			setSurveyUpdated(surveyData.updated || getFormattedDate())
@@ -78,8 +82,13 @@ const Preview = () => {
 			setBgColor(surveyData.bgColor || '#FFFFFF')
 			setButtonColor(sectionData.buttonColor || '#1F38DB')
 			setTextColor(sectionData.textColor || '#000000')
-			setTitle(sectionData.title || 'Isi Judul di sini')
-			setDescription(sectionData.description || 'Isi deskripsi di sini')
+			setTitle(sectionData.title || 'Terima kasih!')
+			setDescription(
+				sectionData.description || 'Anda sudah menyelesaikan survei ini.'
+			)
+		} else {
+			// Set the first section as active if no data is found
+			setActiveSection(sections[0].id)
 		}
 	}, [id])
 
@@ -137,7 +146,9 @@ const Preview = () => {
 								to={`/survey/${path}/${id}`}
 								onClick={() => handleMenuClick(label)}
 								className={`relative font-normal focus:outline-none ${
-									activeMenu === label ? 'text-blue-600 font-semibold' : 'text-gray-600'
+									activeMenu === label
+										? 'text-blue-600 font-semibold'
+										: 'text-gray-600'
 								}`}
 							>
 								{label}

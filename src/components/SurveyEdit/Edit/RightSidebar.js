@@ -16,6 +16,7 @@ const RightSidebar = ({
 	setTextColor,
 	backgroundImage,
 	handleBackgroundChange,
+	handleBackgroundRemove,
 	title,
 	setTitle,
 	description,
@@ -147,7 +148,7 @@ const RightSidebar = ({
 								type="text"
 								value={buttonText}
 								onChange={(e) => setButtonText(e.target.value)}
-								className="flex-grow p-2 rounded border border-gray-300 bg-gray-100"
+								className="flex-grow p-2 rounded border border-gray-300 bg-white"
 							/>
 						</div>
 					) : null}
@@ -160,7 +161,7 @@ const RightSidebar = ({
 									type="text"
 									value={title}
 									onChange={(e) => setTitle(e.target.value)}
-									className="flex-grow p-2 rounded border border-gray-300 bg-gray-100"
+									className="flex-grow p-2 rounded border border-gray-300 bg-white"
 									placeholder="Isi Judul di sini"
 								/>
 							</div>
@@ -170,7 +171,7 @@ const RightSidebar = ({
 								<textarea
 									value={description}
 									onChange={(e) => setDescription(e.target.value)}
-									className="flex-grow p-2 rounded border border-gray-300 bg-gray-100"
+									className="flex-grow p-2 rounded border border-gray-300 bg-white"
 									placeholder="Isi deskripsi di sini"
 								/>
 							</div>
@@ -190,27 +191,67 @@ const RightSidebar = ({
 					{/* Upload Background with Custom Icon */}
 					<div className="flex items-center justify-between">
 						<label className="w-28 text-gray-800">Latar</label>
-						<div className="relative flex-grow">
-							<input
-								type="text"
-								placeholder="Tidak ada"
-								value={backgroundImage ? 'Latar terpilih' : ''}
-								readOnly
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-gray-100 text-gray-500"
-							/>
-							<input
-								type="file"
-								accept="image/*"
-								onChange={handleBackgroundChange}
-								className="hidden"
-								id="background-upload"
-							/>
-							<label
-								htmlFor="background-upload"
-								className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
-							>
-								<Icon icon="mdi:upload" className="text-gray-500 text-lg" />
-							</label>
+						<div className="relative flex-grow flex items-center">
+							{backgroundImage ? (
+								// Ketika backgroundImage sudah ada
+								<>
+									<input
+										type="text"
+										value="Latar terpilih"
+										readOnly
+										className="w-full p-2 pr-10 rounded border border-gray-300 bg-white text-gray-800"
+									/>
+									{/* Ikon Ganti Gambar */}
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleBackgroundChange}
+										className="hidden"
+										id="background-replace"
+									/>
+									<label
+										htmlFor="background-replace"
+										className="absolute right-9 top-1/2 transform -translate-y-1/2 cursor-pointer"
+										title="Ganti Latar"
+									>
+										<Icon icon="mdi:upload" className="text-blue-500 text-lg" />
+									</label>
+									{/* Ikon Hapus Gambar */}
+									<button
+										onClick={handleBackgroundRemove}
+										className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+										title="Hapus Latar"
+									>
+										<Icon
+											icon="mdi:close-circle"
+											className="text-red-500 text-xl"
+										/>
+									</button>
+								</>
+							) : (
+								// Ketika backgroundImage belum ada
+								<>
+									<input
+										type="text"
+										placeholder="Tidak ada"
+										readOnly
+										className="w-full p-2 pr-10 rounded border border-gray-300 bg-white text-gray-500"
+									/>
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleBackgroundChange}
+										className="hidden"
+										id="background-upload"
+									/>
+									<label
+										htmlFor="background-upload"
+										className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+									>
+										<Icon icon="mdi:upload" className="text-gray-500 text-lg" />
+									</label>
+								</>
+							)}
 						</div>
 					</div>
 
@@ -222,7 +263,7 @@ const RightSidebar = ({
 								type="text"
 								value={bgColor}
 								onChange={(e) => setBgColor(e.target.value)}
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-gray-100"
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
 							/>
 							<input
 								type="color"
@@ -241,7 +282,7 @@ const RightSidebar = ({
 								type="text"
 								value={buttonColor}
 								onChange={(e) => setButtonColor(e.target.value)}
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-gray-100"
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
 							/>
 							<input
 								type="color"
@@ -260,7 +301,7 @@ const RightSidebar = ({
 								type="text"
 								value={textColor}
 								onChange={(e) => setTextColor(e.target.value)}
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-gray-100"
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
 							/>
 							<input
 								type="color"

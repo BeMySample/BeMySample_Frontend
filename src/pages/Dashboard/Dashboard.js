@@ -248,7 +248,7 @@ const Dashboard = () => {
 								title={survey.surveyTitle}
 								respondents={survey.respondents}
 								updated={survey.updated}
-								image={survey.image || 'default_image_path'}
+								image={survey.backgroundImage}
 								status={survey.status}
 								isActive={activeMenuId === survey.id}
 								onToggleMenu={() => toggleMenu(survey.id)}

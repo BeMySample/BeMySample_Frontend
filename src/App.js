@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
 import LandingPage from './pages/LandingPage'
 import Page404 from './pages/Page404'
-import LogIn from './pages/SignIn/LogIn'
+import LogIn from './pages/SignIn/Login'
 import Dashboard from './pages/Dashboard/Dashboard'
 import { Link, useLocation } from 'react-router-dom'
 import ProfilePict from './assets/images/profilepict.png'
@@ -15,8 +15,9 @@ import { motion } from 'framer-motion'
 import { FaAngleDown } from 'react-icons/fa'
 import { Icon } from '@iconify/react/dist/iconify.js'
 import Edit from './pages/Dashboard/Survey/Edit'
-import Breadcrumbs from './components/Breadcrumbs'
 import Preview from './pages/Dashboard/Survey/Preview'
+import Register from './pages/SignIn/Register'
+import Publish from './pages/Dashboard/Survey/Publish'
 
 const App = () => {
 	return (
@@ -32,7 +33,6 @@ const Content = () => {
 		localStorage.getItem('language') || 'id'
 	)
 	const [dropdownOpen, setDropdownOpen] = useState(false)
-	const [activeMenu, setActiveMenu] = useState('Sunting')
 
 	const translations = {
 		en: {
@@ -65,14 +65,11 @@ const Content = () => {
 		setDropdownOpen(false)
 	}
 
-	const handleMenuClick = (menu) => {
-		setActiveMenu(menu)
-		// Add your navigation logic here if needed (e.g., routing)
-	}
+	const [menuOpen, setMenuOpen] = useState(false)
+	const toggleMenu = () => setMenuOpen(!menuOpen)
 
 	return (
 		<div>
-			{/* Navbar hanya ditampilkan jika bukan di halaman login */}
 			{(location.pathname === '/' || location.pathname === '/dashboard') && (
 				<NavBar
 					childrenLeft={
@@ -86,32 +83,30 @@ const Content = () => {
 					}
 					childrenCenter={
 						location.pathname === '/' && (
-							<div className="flex-grow flex items-center justify-center">
-								<ul className="flex space-x-2 items-center">
-									{navItems.map(({ path, label }) => (
-										<motion.li
-											key={path}
-											className={`px-4 py-1 rounded-full ${
-												location.pathname === path
-													? 'bg-[#0081fb] text-white font-semibold py-1.5'
-													: 'text-black hover:bg-gray-300 transition-all duration-300 py-1.5'
-											}`}
-											whileHover={{ scale: 1.05 }}
-										>
-											<Link to={path}>
-												<span className="flex gap-2 items-center font-inter">
-													{label}
-												</span>
-											</Link>
-										</motion.li>
-									))}
-								</ul>
-							</div>
+							<ul className="flex flex-col lg:flex-row lg:space-x-2 items-center text-center">
+								{navItems.map(({ path, label }) => (
+									<motion.li
+										key={path}
+										className={`px-4 py-1 rounded-full ${
+											location.pathname === path
+												? 'bg-[#0081fb] text-white font-semibold py-1.5'
+												: 'text-black hover:bg-gray-300 transition-all duration-300 py-1.5'
+										}`}
+										whileHover={{ scale: 1.05 }}
+									>
+										<Link to={path}>
+											<span className="flex gap-2 items-center font-inter">
+												{label}
+											</span>
+										</Link>
+									</motion.li>
+								))}
+							</ul>
 						)
 					}
 					childrenRight={
 						location.pathname === '/' ? (
-							<div className="flex items-center gap-2">
+							<div className="flex flex-col lg:flex-row items-center gap-2">
 								<div className="relative">
 									<motion.button
 										onClick={toggleDropdown}
@@ -155,32 +150,30 @@ const Content = () => {
 									)}
 								</div>
 
-								<div className="flex gap-2">
-									<Link to="/login">
-										<motion.button
-											className="hover:bg-blue-200 transition-all text-blue-700 px-4 py-2 rounded-xl"
-											whileHover={{ scale: 1.05 }}
-										>
-											{translations[language].signIn}
-										</motion.button>
-									</Link>
-									<Link to="/register">
-										<motion.button
-											className="bg-[#0081FB] hover:bg-blue-700 text-white px-4 py-2 rounded-xl"
-											whileHover={{ scale: 1.05 }}
-										>
-											{translations[language].register}
-										</motion.button>
-									</Link>
-								</div>
+								<Link to="/login">
+									<motion.button
+										className="hover:bg-blue-200 transition-all text-blue-700 px-4 py-2 rounded-xl"
+										whileHover={{ scale: 1.05 }}
+									>
+										{translations[language].signIn}
+									</motion.button>
+								</Link>
+								<Link to="/register">
+									<motion.button
+										className="bg-[#0081FB] hover:bg-blue-700 text-white px-4 py-2 rounded-xl"
+										whileHover={{ scale: 1.05 }}
+									>
+										{translations[language].register}
+									</motion.button>
+								</Link>
 							</div>
 						) : (
-							<div className="flex flex-row gap-2 items-center font-inter">
-								<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
+							<div className="flex flex-col lg:flex-row items-center gap-2">
+								<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex items-center gap-2">
 									<Icon icon="akar-icons:coin" />
 									<p>200.000</p>
 								</div>
-								<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
+								<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex items-center gap-2">
 									<img
 										src={ProfilePict}
 										alt="profile"
@@ -194,15 +187,25 @@ const Content = () => {
 							</div>
 						)
 					}
+					toggleDropdown={toggleDropdown}
+					dropdownOpen={dropdownOpen}
+					changeLanguage={changeLanguage}
+					translations={translations}
+					location={location}
+					navItems={navItems}
+					toggleMenu={toggleMenu}
+					menuOpen={menuOpen}
 				/>
 			)}
 
 			<Routes>
 				<Route path="/" element={<LandingPage />} />
 				<Route path="/login" element={<LogIn />} />
+				<Route path="/register" element={<Register />} />
 				<Route path="/dashboard" element={<Dashboard />} />
 				<Route path="/survey/edit/:id" element={<Edit />} />
 				<Route path="/survey/preview/:id" element={<Preview />} />
+				<Route path="/survey/publish/:id" element={<Publish />} />
 				<Route path="*" element={<Page404 />} />
 			</Routes>
 			<style>

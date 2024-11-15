@@ -5,10 +5,12 @@ import LeftSidebar from '../../../components/SurveyEdit/Edit/LeftSidebar'
 import MainContent from '../../../components/SurveyEdit/Edit/MainContent'
 import RightSidebar from '../../../components/SurveyEdit/Edit/RightSidebar'
 import NavBar from '../../../components/Navbar'
-import Breadcrumbs from '../../../components/Breadcrumbs'
+import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
 import ProfilePict from '../../../assets/images/profilepict.png'
 import { Icon } from '@iconify/react'
 import { Helmet } from 'react-helmet'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 
 const LOCAL_STORAGE_KEY = 'surveyData'
 
@@ -42,7 +44,7 @@ const Edit = () => {
 			'Survei Baru'
 	)
 	const [contentText, setContentText] = useState('')
-	const [selectedIcon, setSelectedIcon] = useState('') // State to hold selected icon
+	const [selectedIcon, setSelectedIcon] = useState('')
 	const [surveyStatus, setSurveyStatus] = useState('draft')
 	const [respondents, setRespondents] = useState(0)
 	const [surveyUpdated, setSurveyUpdated] = useState(getFormattedDate())
@@ -51,12 +53,47 @@ const Edit = () => {
 	const [bgColor, setBgColor] = useState('#FFFFFF')
 	const [buttonColor, setButtonColor] = useState('#1F38DB')
 	const [textColor, setTextColor] = useState('#000000')
-	const [title, setTitle] = useState('Isi Judul di sini')
-	const [description, setDescription] = useState('Isi deskripsi di sini')
+	const [title, setTitle] = useState('Terima kasih!')
+	const [description, setDescription] = useState(
+		'Anda sudah menyelesaikan survei ini'
+	)
 	const [isEditing, setIsEditing] = useState(null)
 	const [editedLabel, setEditedLabel] = useState('')
 	const [unsavedChanges, setUnsavedChanges] = useState(false)
 	const [saveStatus, setSaveStatus] = useState('idle')
+
+	useEffect(() => {
+		if (unsavedChanges) {
+			const autoSaveTimeout = setTimeout(() => {
+				saveToLocalStorage()
+				toast('Perubahan otomatis disimpan!', {
+					icon: <Icon icon="line-md:check-all" />,
+					style: {
+						borderRadius: '10px',
+						background: '#2073DB',
+						color: '#fff',
+					},
+					position: 'bottom-right',
+				})
+				setUnsavedChanges(false)
+			}, 1000)
+
+			return () => clearTimeout(autoSaveTimeout)
+		}
+	}, [
+		sections,
+		surveyTitle,
+		activeSection,
+		contentText,
+		buttonText,
+		backgroundImage,
+		bgColor,
+		buttonColor,
+		textColor,
+		title,
+		description,
+		unsavedChanges,
+	])
 
 	useEffect(() => {
 		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
@@ -65,9 +102,13 @@ const Edit = () => {
 		if (surveyData) {
 			setSections(surveyData.sections || sections)
 			setSurveyTitle(surveyData.surveyTitle || 'Survei Baru')
-			setActiveSection(surveyData.activeSection || 'welcome')
 
-			const sectionData = surveyData.data[surveyData.activeSection] || {}
+			// Set the first section as active if there is no active section saved
+			const initialSection = surveyData.activeSection || sections[0].id
+			setActiveSection(initialSection)
+
+			// Load other data as usual
+			const sectionData = surveyData.data[initialSection] || {}
 			setSurveyStatus(surveyData.status || 'draft')
 			setRespondents(surveyData.respondents || 0)
 			setSurveyUpdated(surveyData.updated || getFormattedDate())
@@ -77,8 +118,13 @@ const Edit = () => {
 			setBgColor(surveyData.bgColor || '#FFFFFF')
 			setButtonColor(sectionData.buttonColor || '#1F38DB')
 			setTextColor(sectionData.textColor || '#000000')
-			setTitle(sectionData.title || 'Isi Judul di sini')
-			setDescription(sectionData.description || 'Isi deskripsi di sini')
+			setTitle(sectionData.title || 'Terima kasih!')
+			setDescription(
+				sectionData.description || 'Anda sudah menyelesaikan survei ini.'
+			)
+		} else {
+			// Set the first section as active if no data is found
+			setActiveSection(sections[0].id)
 		}
 	}, [id])
 
@@ -88,13 +134,11 @@ const Edit = () => {
 		const surveyData = {
 			sections,
 			surveyTitle,
-			activeSection,
 			data: {
 				...savedData[id]?.data,
 				[activeSection]: {
 					contentText,
 					buttonText,
-					backgroundImage,
 					bgColor,
 					buttonColor,
 					textColor,
@@ -147,7 +191,7 @@ const Edit = () => {
 		const newItem = {
 			id: `item-${sections.length + 1}`,
 			label: `Item Baru ${sections.length + 1}`,
-			icon: selectedIcon || 'mdi:file-document-outline', // Use selected icon or default
+			icon: selectedIcon || 'mdi:file-document-outline',
 		}
 		setSections([...sections, newItem])
 		setActiveSection(newItem.id)
@@ -213,137 +257,143 @@ const Edit = () => {
 		setActiveMenu(menu)
 	}
 
+	const handleDelete = (id) => {
+		setSections((prevSections) =>
+			prevSections.filter((section) => section.id !== id)
+		)
+		setUnsavedChanges(true)
+	}
+
+	const moveSection = (fromIndex, toIndex) => {
+		const updatedSections = Array.from(sections)
+
+		const [movedItem] = updatedSections.splice(fromIndex, 1)
+		updatedSections.splice(toIndex, 0, movedItem)
+
+		setSections(updatedSections)
+		setUnsavedChanges(true)
+	}
+
+	const handleBackgroundRemove = () => {
+		setBackgroundImage(null)
+		setUnsavedChanges(true)
+	}	
+
 	return (
-		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
-			<NavBar
-				childrenLeft={
-					<Breadcrumbs
-						items={[
-							{ label: 'Surveiku', link: '/dashboard' },
-							{ label: surveyTitle, link: `/survey/edit/${id}` },
-						]}
-						separator="mdi:chevron-right"
-						onTitleChange={handleTitleChange}
-					/>
-				}
-				childrenCenter={
-					<div className="absolute inset-0 top-0 left-0 right-0 w-full -z-10 flex-grow flex items-center justify-center space-x-8 text-base">
-						{[
-							{ label: 'Sunting', path: 'edit' },
-							{ label: 'Pratinjau', path: 'preview' },
-							{ label: 'Terbitkan', path: 'publish' },
-							{ label: 'Hasil', path: 'results' },
-						].map(({ label, path }) => (
-							<Link
-								key={label}
-								to={`/survey/${path}/${id}`} // English path here
-								onClick={() => handleMenuClick(label)}
-								className={`relative font-normal focus:outline-none ${
-									activeMenu === label ? 'text-blue-600 font-semibold' : 'text-gray-600'
-								}`}
-							>
-								{label}
-								{activeMenu === label && (
-									<span className="absolute -top-8 left-0 right-0 h-[12px] bg-gradient-to-r from-[#1F38DB] to-[#30ADD7] rounded-b-md"></span>
-								)}
-							</Link>
-						))}
-					</div>
-				}
-				childrenRight={
-					<div className="flex flex-row gap-2 items-center font-inter text-base">
-						<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
-							<Icon icon="akar-icons:coin" />
-							<p>200.000</p>
+		<DndProvider backend={HTML5Backend}>
+			<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
+				<NavBar
+					childrenLeft={
+						<Breadcrumbs
+							items={[
+								{ label: 'Surveiku', link: '/dashboard' },
+								{ label: surveyTitle, link: `/survey/edit/${id}` },
+							]}
+							separator="mdi:chevron-right"
+							onTitleChange={handleTitleChange}
+						/>
+					}
+					childrenCenter={
+						<div className="absolute inset-0 top-0 left-0 right-0 w-full -z-10 flex-grow flex items-center justify-center space-x-8 text-base">
+							{[
+								{ label: 'Sunting', path: 'edit' },
+								{ label: 'Pratinjau', path: 'preview' },
+								{ label: 'Terbitkan', path: 'publish' },
+								{ label: 'Hasil', path: 'results' },
+							].map(({ label, path }) => (
+								<Link
+									key={label}
+									to={`/survey/${path}/${id}`}
+									onClick={() => handleMenuClick(label)}
+									className={`relative font-normal focus:outline-none ${
+										activeMenu === label
+											? 'text-blue-600 font-semibold'
+											: 'text-gray-600'
+									}`}
+								>
+									{label}
+									{activeMenu === label && (
+										<span className="absolute -top-8 left-0 right-0 h-[12px] bg-gradient-to-r from-[#1F38DB] to-[#30ADD7] rounded-b-md"></span>
+									)}
+								</Link>
+							))}
 						</div>
-						<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
-							<img
-								src={ProfilePict}
-								alt="profile"
-								className="w-10 h-10 rounded-full"
-							/>
+					}
+					childrenRight={
+						<div className="flex flex-row gap-2 items-center font-inter text-base">
+							<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
+								<Icon icon="akar-icons:coin" />
+								<p>200.000</p>
+							</div>
+							<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
+								<img
+									src={ProfilePict}
+									alt="profile"
+									className="w-10 h-10 rounded-full"
+								/>
+							</div>
 						</div>
-					</div>
-				}
-			/>
-			<Toaster position="top-right" />
-			<div className="min-h-20" />
-			<div className="flex flex-grow">
-				<LeftSidebar
-					sections={sections}
-					activeSection={activeSection}
-					setActiveSection={handleSectionChange}
-					addItem={addItem}
-					handleRename={handleRename}
-					isEditing={isEditing}
-					editedLabel={editedLabel}
-					handleRenameChange={handleRenameChange}
-					handleRenameSubmit={handleRenameSubmit}
+					}
 				/>
-				<MainContent
-					contentText={contentText}
-					textColor={textColor}
-					buttonText={buttonText}
-					buttonColor={buttonColor}
-					bgColor={bgColor}
-					backgroundImage={backgroundImage}
-					title={title}
-					description={description}
-				/>
-				<RightSidebar
-					contentText={contentText}
-					setContentText={(value) => handleChange(setContentText, value)}
-					setSelectedIcon={(value) => {
-						setSelectedIcon(value)
-						updateIconForActiveSection(value)
-					}}
-					buttonText={buttonText}
-					setButtonText={(value) => handleChange(setButtonText, value)}
-					bgColor={bgColor}
-					setBgColor={(value) => handleChange(setBgColor, value)}
-					buttonColor={buttonColor}
-					setButtonColor={(value) => handleChange(setButtonColor, value)}
-					textColor={textColor}
-					setTextColor={(value) => handleChange(setTextColor, value)}
-					backgroundImage={backgroundImage}
-					handleBackgroundChange={handleBackgroundChange}
-					activeSection={activeSection}
-					title={title}
-					setTitle={(value) => handleChange(setTitle, value)}
-					description={description}
-					setDescription={(value) => handleChange(setDescription, value)}
-				/>
-			</div>
-
-			{/* Save Button */}
-			<div className="flex justify-end p-4 absolute right-0 bottom-0">
-				<button
-					onClick={handleManualSave}
-					disabled={!unsavedChanges}
-					className={`${
-						unsavedChanges ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'
-					} text-white px-4 py-2 rounded-lg flex items-center gap-2`}
-				>
-					<Icon
-						icon={
-							saveStatus === 'saving'
-								? 'line-md:loading-loop'
-								: saveStatus === 'saved'
-								? 'line-md:check-all'
-								: 'mdi:content-save'
-						}
-						className={`text-lg ${
-							saveStatus === 'saving' ? 'animate-spin' : ''
-						}`}
+				<Toaster position="top-right" />
+				<div className="min-h-20" />
+				<div className="flex flex-grow">
+					<LeftSidebar
+						sections={sections}
+						activeSection={activeSection}
+						setActiveSection={handleSectionChange}
+						addItem={addItem}
+						handleRename={handleRename}
+						isEditing={isEditing}
+						editedLabel={editedLabel}
+						handleRenameChange={handleRenameChange}
+						handleRenameSubmit={handleRenameSubmit}
+						handleDelete={handleDelete}
+						moveSection={moveSection}
 					/>
-					{saveStatus === 'saved' ? 'Berhasil Disimpan' : 'Simpan'}
-				</button>
-			</div>
+					<MainContent
+						sections={sections}
+						activeSection={activeSection}
+						contentText={contentText}
+						textColor={textColor}
+						buttonText={buttonText}
+						buttonColor={buttonColor}
+						bgColor={bgColor}
+						backgroundImage={backgroundImage}
+						title={title}
+						description={description}
+					/>
+					<RightSidebar
+						contentText={contentText}
+						setContentText={(value) => handleChange(setContentText, value)}
+						setSelectedIcon={(value) => {
+							setSelectedIcon(value)
+							updateIconForActiveSection(value)
+						}}
+						buttonText={buttonText}
+						setButtonText={(value) => handleChange(setButtonText, value)}
+						bgColor={bgColor}
+						setBgColor={(value) => handleChange(setBgColor, value)}
+						buttonColor={buttonColor}
+						setButtonColor={(value) => handleChange(setButtonColor, value)}
+						textColor={textColor}
+						setTextColor={(value) => handleChange(setTextColor, value)}
+						backgroundImage={backgroundImage}
+						handleBackgroundChange={handleBackgroundChange}
+						handleBackgroundRemove={handleBackgroundRemove}
+						activeSection={activeSection}
+						title={title}
+						setTitle={(value) => handleChange(setTitle, value)}
+						description={description}
+						setDescription={(value) => handleChange(setDescription, value)}
+					/>
+				</div>
 
-			<Helmet>
-				<title>{surveyTitle} - Sunting Survei | BeMySample</title>
-			</Helmet>
-		</div>
+				<Helmet>
+					<title>{surveyTitle} - Sunting Survei | BeMySample</title>
+				</Helmet>
+			</div>
+		</DndProvider>
 	)
 }
 

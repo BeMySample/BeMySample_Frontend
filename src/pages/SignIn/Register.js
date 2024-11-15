@@ -7,15 +7,17 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet'
 import { motion } from 'framer-motion'
 
-const Login = () => {
+const Register = () => {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
+	const [confirmPassword, setConfirmPassword] = useState('')
 	const [showPassword, setShowPassword] = useState(false)
 	const [formSubmitted, setFormSubmitted] = useState(false)
 
 	const isEmailValid = email.trim() !== ''
 	const isPasswordValid = password.trim() !== ''
-	const isFormValid = isEmailValid && isPasswordValid
+	const isPasswordMatch = password === confirmPassword
+	const isFormValid = isEmailValid && isPasswordValid && isPasswordMatch
 
 	const handleSubmit = (e) => {
 		e.preventDefault()
@@ -27,7 +29,7 @@ const Login = () => {
 	}
 
 	return (
-		<div className="min-h-screen flex items-center justify-center relative font-inter">
+		<div className="min-h-screen flex items-center justify-center relative">
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
@@ -65,13 +67,13 @@ const Login = () => {
 							/>
 						</Link>
 						<div className="flex flex-col items-center">
-							<p className="text-xl sm:text-2xl md:text-3xl font-gili text-center">
-								Selamat datang kembali!
+							<p className="text-xl sm:text-2xl md:text-3xl font-gili">
+								Selamat Datang!
 							</p>
-							<p className="text-sm sm:text-base md:text-lg font-poppins text-center">
-								Belum punya akun?{' '}
-								<Link to="/register" className="text-blue-500">
-									Daftar gratis sekarang!
+							<p className="text-sm sm:text-base md:text-lg font-poppins">
+								Sudah punya akun?{' '}
+								<Link to="/login" className="text-blue-500">
+									Masuk di sini!
 								</Link>
 							</p>
 						</div>
@@ -85,7 +87,7 @@ const Login = () => {
 					>
 						<FcGoogle className="text-lg md:text-xl" />
 						<span className="font-inter text-sm sm:text-base md:text-lg">
-							Masuk dengan Google
+							Daftar dengan Google
 						</span>
 					</motion.button>
 
@@ -148,34 +150,53 @@ const Login = () => {
 									Kata sandi tidak boleh kosong.
 								</p>
 							)}
-							<div className="flex w-full justify-end mt-1 text-xs sm:text-sm md:text-base">
-								<button className="hover:text-blue-600">
-									Lupa Kata Sandi?
-								</button>
+						</label>
+
+						<label
+							htmlFor="confirmPassword"
+							className="flex flex-col w-full items-start"
+						>
+							<span className="mb-2 text-xs sm:text-sm md:text-base text-gray-500">
+								Konfirmasi Kata Sandi
+							</span>
+							<div className="relative w-full">
+								<motion.input
+									type="password"
+									id="confirmPassword"
+									value={confirmPassword}
+									onChange={(e) => setConfirmPassword(e.target.value)}
+									className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
+									placeholder="Konfirmasi Kata Sandi Anda"
+									whileFocus={{ scale: 1.02 }}
+								/>
 							</div>
+							{!isPasswordMatch && formSubmitted && (
+								<p className="text-xs sm:text-sm text-red-500 mt-1">
+									Kata sandi tidak cocok.
+								</p>
+							)}
 						</label>
 					</div>
 
 					<motion.button
-						onClick={() => (window.location.href = '/dashboard')}
-						// disabled={!isFormValid}
+						type="submit"
+						disabled={!isFormValid}
 						whileHover={{ scale: isFormValid ? 1.05 : 1 }}
 						whileTap={{ scale: 0.95 }}
 						className={`w-full px-6 py-3 rounded-full text-white font-medium transition ${
-							// isFormValid ? 'bg-blue-500' : 'bg-gray-400'
-							'bg-blue-500'
+							isFormValid ? 'bg-blue-500' : 'bg-gray-400'
 						}`}
 					>
-						Masuk
+						Daftar
 					</motion.button>
 				</form>
 			</motion.div>
 
 			<Helmet>
-				<title>Log In - BeMySample</title>
+				<title>Sign Up - BeMySample</title>
 			</Helmet>
 		</div>
 	)
 }
 
-export default Login
+export default Register
