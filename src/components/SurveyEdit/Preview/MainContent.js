@@ -14,6 +14,7 @@ const MainContent = ({
 	textColor,
 	buttonColor,
 	buttonText,
+	buttonTextColor,
 	bgColor,
 	backgroundImage,
 	title,
@@ -28,6 +29,7 @@ const MainContent = ({
 						textColor={textColor}
 						buttonColor={buttonColor}
 						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
 						viewMode={viewMode}
 					/>
 				)

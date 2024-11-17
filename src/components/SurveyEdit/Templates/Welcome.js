@@ -33,21 +33,20 @@ const Welcome = ({
 			className={`py-2 px-4 rounded-lg flex flex-row gap-2 items-center justify-center ${
 				viewMode === 'mobile' ? 'text-base' : 'text-lg'
 			}`}
-			style={{ backgroundColor: buttonColor, color: '#FFFFFF' }}
+			style={{ backgroundColor: buttonColor, color: buttonTextColor }}
 		>
 			<Icon icon="solar:play-bold" />
 			<p
 				className={`font-semibold ${
 					viewMode === 'mobile' ? 'text-[16px]' : 'text-[18px]'
 				}`}
-				style={{ color: buttonTextColor }}
 			>
 				{buttonText}
 			</p>
 		</button>
 		<p>
 			<small className="text-xs">
-				atau tekan <kbd>Enter</kbd>
+				atau tekan <kbd>Enter</kbd> ↵
 			</small>
 		</p>
 	</div>

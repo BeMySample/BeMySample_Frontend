@@ -55,6 +55,7 @@ const Preview = () => {
 	const [bgColor, setBgColor] = useState('#FFFFFF')
 	const [buttonColor, setButtonColor] = useState('#1F38DB')
 	const [textColor, setTextColor] = useState('#000000')
+	const [buttonTextColor, setButtonTextColor] = useState('#FFFFFF')
 	const [title, setTitle] = useState('Isi Judul di sini')
 	const [description, setDescription] = useState('Isi deskripsi di sini')
 	const [unsavedChanges, setUnsavedChanges] = useState(false)
@@ -82,6 +83,7 @@ const Preview = () => {
 			setBgColor(surveyData.bgColor || '#FFFFFF')
 			setButtonColor(sectionData.buttonColor || '#1F38DB')
 			setTextColor(sectionData.textColor || '#000000')
+			setButtonTextColor(sectionData.buttonTextColor || '#FFFFFF')
 			setTitle(sectionData.title || 'Terima kasih!')
 			setDescription(
 				sectionData.description || 'Anda sudah menyelesaikan survei ini.'
@@ -182,6 +184,7 @@ const Preview = () => {
 					contentText={contentText}
 					textColor={textColor}
 					buttonText={buttonText}
+					buttonTextColor={buttonTextColor}
 					buttonColor={buttonColor}
 					bgColor={bgColor}
 					backgroundImage={backgroundImage}

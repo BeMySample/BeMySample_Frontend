@@ -83,7 +83,7 @@ const DraggableItem = ({
 						icon={item.icon}
 						className="mr-2 text-lg"
 						style={{
-							color: activeSection === item.id ? '#FFFFFF' : '#7F1FDB',
+							color: activeSection === item.id ? '#FFFFFF' : item.icon === 'hugeicons:start-up-02' || item.icon === 'icon-park-outline:bye' ? '#2073DB' : '#7F1FDB',
 						}}
 					/>
 					{isEditing === item.id ? (

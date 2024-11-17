@@ -265,7 +265,7 @@ const RightSidebar = ({
 								type="text"
 								value={bgColor}
 								onChange={(e) => setBgColor(e.target.value)}
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white uppercase"
 							/>
 							<input
 								type="color"
@@ -281,14 +281,14 @@ const RightSidebar = ({
 						<div className="relative flex-grow">
 							<input
 								type="text"
-								value={buttonTextColor}
-								onChange={(e) => setButtonTextColor(e.target.value)}
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
+								value={textColor}
+								onChange={(e) => setTextColor(e.target.value)}
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white uppercase"
 							/>
 							<input
 								type="color"
-								value={buttonTextColor}
-								onChange={(e) => setButtonTextColor(e.target.value)}
+								value={textColor}
+								onChange={(e) => setTextColor(e.target.value)}
 								className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 border-none rounded-full cursor-pointer"
 							/>
 						</div>
@@ -307,7 +307,7 @@ const RightSidebar = ({
 								type="text"
 								value={buttonColor}
 								onChange={(e) => setButtonColor(e.target.value)}
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white uppercase"
 							/>
 							<input
 								type="color"
@@ -323,14 +323,14 @@ const RightSidebar = ({
 						<div className="relative flex-grow">
 							<input
 								type="text"
-								value={textColor}
-								onChange={(e) => setTextColor(e.target.value)}
-								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
+								value={buttonTextColor}
+								onChange={(e) => setButtonTextColor(e.target.value)}
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white uppercase"
 							/>
 							<input
 								type="color"
-								value={textColor}
-								onChange={(e) => setTextColor(e.target.value)}
+								value={buttonTextColor}
+								onChange={(e) => setButtonTextColor(e.target.value)}
 								className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 border-none rounded-full cursor-pointer"
 							/>
 						</div>
