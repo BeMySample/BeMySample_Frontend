@@ -52,6 +52,7 @@ const Edit = () => {
 	const [backgroundImage, setBackgroundImage] = useState(null)
 	const [bgColor, setBgColor] = useState('#FFFFFF')
 	const [buttonColor, setButtonColor] = useState('#1F38DB')
+	const [buttonTextColor, setButtonTextColor] = useState('#FFFFFF')
 	const [textColor, setTextColor] = useState('#000000')
 	const [title, setTitle] = useState('Terima kasih!')
 	const [description, setDescription] = useState(
@@ -89,6 +90,7 @@ const Edit = () => {
 		backgroundImage,
 		bgColor,
 		buttonColor,
+		buttonTextColor,
 		textColor,
 		title,
 		description,
@@ -117,6 +119,7 @@ const Edit = () => {
 			setBackgroundImage(surveyData.backgroundImage || null)
 			setBgColor(surveyData.bgColor || '#FFFFFF')
 			setButtonColor(sectionData.buttonColor || '#1F38DB')
+			setButtonTextColor(sectionData.buttonTextColor || '#FFFFFF')
 			setTextColor(sectionData.textColor || '#000000')
 			setTitle(sectionData.title || 'Terima kasih!')
 			setDescription(
@@ -128,11 +131,11 @@ const Edit = () => {
 		}
 	}, [id])
 
-	const saveToLocalStorage = () => {
+	const saveToLocalStorage = (updatedSections = sections) => {
 		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
 
 		const surveyData = {
-			sections,
+			sections: updatedSections, // Gunakan sections yang diperbarui
 			surveyTitle,
 			data: {
 				...savedData[id]?.data,
@@ -141,6 +144,7 @@ const Edit = () => {
 					buttonText,
 					bgColor,
 					buttonColor,
+					buttonTextColor,
 					textColor,
 					title,
 					description,
@@ -206,25 +210,6 @@ const Edit = () => {
 		}
 	}
 
-	const handleManualSave = () => {
-		setSaveStatus('saving')
-		saveToLocalStorage()
-
-		setTimeout(() => {
-			setSaveStatus('saved')
-			toast('Perubahan berhasil disimpan', {
-				icon: '✅',
-				style: {
-					borderRadius: '10px',
-					background: '#333',
-					color: '#fff',
-				},
-			})
-			setUnsavedChanges(false)
-			setTimeout(() => setSaveStatus('idle'), 2000)
-		}, 500)
-	}
-
 	const handleSectionChange = (sectionId) => {
 		setActiveSection(sectionId)
 
@@ -237,6 +222,7 @@ const Edit = () => {
 		setBackgroundImage(surveyData.backgroundImage || null)
 		setBgColor(surveyData.bgColor || '#FFFFFF')
 		setButtonColor(sectionData.buttonColor || '#1F38DB')
+		setButtonTextColor(sectionData.buttonTextColor || '#FFFFFF')
 		setTextColor(sectionData.textColor || '#000000')
 		setTitle(sectionData.title || 'Isi Judul di sini')
 		setDescription(sectionData.description || 'Isi deskripsi di sini')
@@ -277,7 +263,7 @@ const Edit = () => {
 	const handleBackgroundRemove = () => {
 		setBackgroundImage(null)
 		setUnsavedChanges(true)
-	}	
+	}
 
 	return (
 		<DndProvider backend={HTML5Backend}>
@@ -350,7 +336,10 @@ const Edit = () => {
 						handleRenameSubmit={handleRenameSubmit}
 						handleDelete={handleDelete}
 						moveSection={moveSection}
+						setSections={setSections}
+						saveToLocalStorage={saveToLocalStorage} // Tambahkan prop ini
 					/>
+
 					<MainContent
 						sections={sections}
 						activeSection={activeSection}
@@ -358,6 +347,7 @@ const Edit = () => {
 						textColor={textColor}
 						buttonText={buttonText}
 						buttonColor={buttonColor}
+						buttonTextColor={buttonTextColor}
 						bgColor={bgColor}
 						backgroundImage={backgroundImage}
 						title={title}
@@ -376,6 +366,8 @@ const Edit = () => {
 						setBgColor={(value) => handleChange(setBgColor, value)}
 						buttonColor={buttonColor}
 						setButtonColor={(value) => handleChange(setButtonColor, value)}
+						buttonTextColor={buttonTextColor}
+						setButtonTextColor={(value) => handleChange(setButtonTextColor, value)}
 						textColor={textColor}
 						setTextColor={(value) => handleChange(setTextColor, value)}
 						backgroundImage={backgroundImage}

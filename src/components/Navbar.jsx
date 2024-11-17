@@ -3,12 +3,12 @@ import { motion } from 'framer-motion'
 import { FaBars, FaTimes } from 'react-icons/fa'
 
 const NavBar = ({ childrenLeft, childrenCenter, childrenRight, toggleMenu, menuOpen }) => {
-	const storedLanguage = localStorage.getItem('language') || 'id'
+	const storedLanguage = localStorage.getItem('langBMS') || 'id'
 	const [language, setLanguage] = useState(storedLanguage)
 	const [scrolled, setScrolled] = useState(false)
 
 	useEffect(() => {
-		localStorage.setItem('language', language)
+		localStorage.setItem('langBMS', language)
 	}, [language])
 
 	useEffect(() => {

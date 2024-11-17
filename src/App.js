@@ -2,14 +2,14 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
 import LandingPage from './pages/LandingPage'
 import Page404 from './pages/Page404'
-import LogIn from './pages/SignIn/Login'
+import LogIn from './pages/SignIn/LogIn'
 import Dashboard from './pages/Dashboard/Dashboard'
 import { Link, useLocation } from 'react-router-dom'
 import ProfilePict from './assets/images/profilepict.png'
 import logoBeMySample from './assets/images/BeMySampleLogo_Transparent.png'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import NavBar from './components/Navbar'
 import { motion } from 'framer-motion'
 import { FaAngleDown } from 'react-icons/fa'
@@ -30,8 +30,13 @@ const App = () => {
 const Content = () => {
 	const location = useLocation()
 	const [language, setLanguage] = useState(
-		localStorage.getItem('language') || 'id'
+		localStorage.getItem('langBMS') || 'id'
 	)
+
+	useEffect(() => {
+		localStorage.setItem('langBMS', language)
+	}, [language])
+
 	const [dropdownOpen, setDropdownOpen] = useState(false)
 
 	const translations = {

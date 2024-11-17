@@ -12,6 +12,8 @@ const RightSidebar = ({
 	setBgColor,
 	buttonColor,
 	setButtonColor,
+	buttonTextColor,
+	setButtonTextColor,
 	textColor,
 	setTextColor,
 	backgroundImage,
@@ -274,6 +276,29 @@ const RightSidebar = ({
 						</div>
 					</div>
 
+					<div className="flex items-center justify-between">
+						<label className="w-28 text-gray-800">Warna Teks</label>
+						<div className="relative flex-grow">
+							<input
+								type="text"
+								value={buttonTextColor}
+								onChange={(e) => setButtonTextColor(e.target.value)}
+								className="w-full p-2 pr-10 rounded border border-gray-300 bg-white"
+							/>
+							<input
+								type="color"
+								value={buttonTextColor}
+								onChange={(e) => setButtonTextColor(e.target.value)}
+								className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 border-none rounded-full cursor-pointer"
+							/>
+						</div>
+					</div>
+
+					<div className="flex items-center space-x-2 mt-4">
+						<p className="font-bold">Tombol</p>
+						<div className="flex-grow border-t border-gray-400" />
+					</div>
+
 					{/* Button Color Picker */}
 					<div className="flex items-center justify-between">
 						<label className="w-28 text-gray-800">Warna Tombol</label>
@@ -293,7 +318,6 @@ const RightSidebar = ({
 						</div>
 					</div>
 
-					{/* Text Color Picker */}
 					<div className="flex items-center justify-between">
 						<label className="w-28 text-gray-800">Warna Teks</label>
 						<div className="relative flex-grow">

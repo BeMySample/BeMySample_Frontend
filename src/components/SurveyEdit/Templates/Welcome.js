@@ -1,7 +1,13 @@
 import { Icon } from '@iconify/react'
 import React from 'react'
 
-const Welcome = ({ textColor, buttonColor, buttonText, viewMode }) => (
+const Welcome = ({
+	textColor,
+	buttonColor,
+	buttonText,
+	buttonTextColor,
+	viewMode,
+}) => (
 	<div
 		className={`flex flex-col items-center justify-center font-inter ${
 			viewMode === 'mobile' ? 'w-[375px] h-[720px] p-6' : 'w-full h-full p-12'
@@ -30,7 +36,14 @@ const Welcome = ({ textColor, buttonColor, buttonText, viewMode }) => (
 			style={{ backgroundColor: buttonColor, color: '#FFFFFF' }}
 		>
 			<Icon icon="solar:play-bold" />
-			{buttonText}
+			<p
+				className={`font-semibold ${
+					viewMode === 'mobile' ? 'text-[16px]' : 'text-[18px]'
+				}`}
+				style={{ color: buttonTextColor }}
+			>
+				{buttonText}
+			</p>
 		</button>
 		<p>
 			<small className="text-xs">
