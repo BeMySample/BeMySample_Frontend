@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast'
 import RightSidebar from '../../../components/SurveyEdit/Preview/RightSidebar'
 import MainContent from '../../../components/SurveyEdit/Preview/MainContent'
@@ -67,7 +67,7 @@ const Preview = () => {
 		if (surveyData) {
 			setSections(surveyData.sections || sections)
 			setSurveyTitle(surveyData.surveyTitle || 'Survei Baru')
-			
+
 			// Set the first section as active if there is no active section saved
 			const initialSection = surveyData.activeSection || sections[0].id
 			setActiveSection(initialSection)
@@ -122,6 +122,35 @@ const Preview = () => {
 		setActiveMenu(menu)
 	}
 
+	const [user, setUser] = useState({ name: '', avatar: '' })
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+		const name = params.get('name')
+		let avatar = params.get('avatar')
+		const token = params.get('token')
+
+		if (avatar && avatar.includes('=s96-c')) {
+			avatar = avatar.replace('=s96-c', '')
+		}
+
+		if (name && avatar && token) {
+			const userData = { name, avatar, token }
+			localStorage.setItem('user', JSON.stringify(userData))
+			setUser(userData)
+
+			window.history.replaceState({}, document.title, '/dashboard')
+		} else {
+			const savedUser = JSON.parse(localStorage.getItem('user'))
+			if (savedUser) {
+				setUser(savedUser)
+			} else {
+				navigate('/login')
+			}
+		}
+	}, [navigate])
+
 	return (
 		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
 			<NavBar
@@ -169,7 +198,7 @@ const Preview = () => {
 						</div>
 						<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
 							<img
-								src={ProfilePict}
+								src={user?.avatar || ProfilePict}
 								alt="profile"
 								className="w-10 h-10 rounded-full"
 							/>

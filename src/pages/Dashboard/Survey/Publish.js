@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast'
 import NavBar from '../../../components/Navbar'
 import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
@@ -120,6 +120,35 @@ const Publish = () => {
 		setActiveMenu(menu)
 	}
 
+	const [user, setUser] = useState({ name: '', avatar: '' })
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+		const name = params.get('name')
+		let avatar = params.get('avatar')
+		const token = params.get('token')
+
+		if (avatar && avatar.includes('=s96-c')) {
+			avatar = avatar.replace('=s96-c', '')
+		}
+
+		if (name && avatar && token) {
+			const userData = { name, avatar, token }
+			localStorage.setItem('user', JSON.stringify(userData))
+			setUser(userData)
+
+			window.history.replaceState({}, document.title, '/dashboard')
+		} else {
+			const savedUser = JSON.parse(localStorage.getItem('user'))
+			if (savedUser) {
+				setUser(savedUser)
+			} else {
+				navigate('/login')
+			}
+		}
+	}, [navigate])
+
 	return (
 		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
 			<NavBar
@@ -167,7 +196,7 @@ const Publish = () => {
 						</div>
 						<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
 							<img
-								src={ProfilePict}
+								src={user?.avatar || ProfilePict}
 								alt="profile"
 								className="w-10 h-10 rounded-full"
 							/>
@@ -322,45 +351,6 @@ const Publish = () => {
 					<div className="flex flex-row gap-4 items-center justify-between">
 						<p className="text-gray-800">Sisa MyPoin</p>
 						<p className="text-[#14AE5C]">200.000</p>
-					</div>
-				</div>
-
-				<div
-					className="main-container flex flex-row"
-					style={{ overflow: 'hidden', maxWidth: '100%' }}
-				>
-					<div
-						className="scaled-element flex flex-row" // Ubah gap di sini menjadi lebih besar
-						style={{
-							transform: 'scale(0.65)',
-							transformOrigin: 'top left',
-							maxWidth: '100%',
-							width: 'fit-content',
-						}}
-					>
-						<DesktopContent
-							contentText={contentText}
-							textColor={textColor}
-							buttonText={buttonText}
-							buttonColor={buttonColor}
-							bgColor={bgColor}
-							backgroundImage={backgroundImage}
-							title={title}
-							description={description}
-							viewMode="desktop"
-						/>
-
-						<MobileContent
-							contentText={contentText}
-							textColor={textColor}
-							buttonText={buttonText}
-							buttonColor={buttonColor}
-							bgColor={bgColor}
-							backgroundImage={backgroundImage}
-							title={title}
-							description={description}
-							viewMode="mobile"
-						/>
 					</div>
 				</div>
 			</div>

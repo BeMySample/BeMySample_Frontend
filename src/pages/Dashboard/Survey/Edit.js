@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast'
 import LeftSidebar from '../../../components/SurveyEdit/Edit/LeftSidebar'
 import MainContent from '../../../components/SurveyEdit/Edit/MainContent'
@@ -265,6 +265,35 @@ const Edit = () => {
 		setUnsavedChanges(true)
 	}
 
+	const [user, setUser] = useState({ name: '', avatar: '' })
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+		const name = params.get('name')
+		let avatar = params.get('avatar')
+		const token = params.get('token')
+
+		if (avatar && avatar.includes('=s96-c')) {
+			avatar = avatar.replace('=s96-c', '')
+		}
+
+		if (name && avatar && token) {
+			const userData = { name, avatar, token }
+			localStorage.setItem('user', JSON.stringify(userData))
+			setUser(userData)
+
+			window.history.replaceState({}, document.title, '/dashboard')
+		} else {
+			const savedUser = JSON.parse(localStorage.getItem('user'))
+			if (savedUser) {
+				setUser(savedUser)
+			} else {
+				navigate('/login')
+			}
+		}
+	}, [navigate])
+
 	return (
 		<DndProvider backend={HTML5Backend}>
 			<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
@@ -313,7 +342,7 @@ const Edit = () => {
 							</div>
 							<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
 								<img
-									src={ProfilePict}
+									src={user?.avatar || ProfilePict}
 									alt="profile"
 									className="w-10 h-10 rounded-full"
 								/>
@@ -367,7 +396,9 @@ const Edit = () => {
 						buttonColor={buttonColor}
 						setButtonColor={(value) => handleChange(setButtonColor, value)}
 						buttonTextColor={buttonTextColor}
-						setButtonTextColor={(value) => handleChange(setButtonTextColor, value)}
+						setButtonTextColor={(value) =>
+							handleChange(setButtonTextColor, value)
+						}
 						textColor={textColor}
 						setTextColor={(value) => handleChange(setTextColor, value)}
 						backgroundImage={backgroundImage}

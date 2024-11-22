@@ -65,7 +65,7 @@ const MainContent = ({
 	return (
 		<div className="flex-grow flex justify-center items-center bg-[#f5f5f5] m-4 rounded-2xl">
 			<div
-				className="p-8 rounded-2xl flex justify-center items-center"
+				className="p-8 rounded-2xl flex justify-center items-center border-8 border-zinc-300"
 				style={{
 					width: viewMode === 'mobile' ? '375px' : '100%',
 					maxWidth: '1440px',
@@ -76,6 +76,9 @@ const MainContent = ({
 					backgroundPosition: 'center',
 					backgroundRepeat: 'no-repeat',
 					transition: 'width 0.5s ease-in-out, height 0.5s ease-in-out',
+					WebkitBoxShadow: '7px 11px 15px -4px rgba(138,138,138,1)',
+					MozBoxShadow: '7px 11px 15px -4px rgba(138,138,138,1)',
+					boxShadow: '7px 11px 15px -4px rgba(138,138,138,1)'
 				}}
 			>
 				{renderSectionContent()}

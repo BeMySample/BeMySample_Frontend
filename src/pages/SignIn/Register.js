@@ -8,35 +8,105 @@ import { Helmet } from 'react-helmet'
 import { motion } from 'framer-motion'
 
 const Register = () => {
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-	const [confirmPassword, setConfirmPassword] = useState('')
+	const [formData, setFormData] = useState({
+		nama: '',
+		email: '',
+		password: '',
+		confirmPassword: '',
+	})
+
 	const [showPassword, setShowPassword] = useState(false)
 	const [formSubmitted, setFormSubmitted] = useState(false)
+	const [errorMessage, setErrorMessage] = useState(null)
 
-	const isEmailValid = email.trim() !== ''
-	const isPasswordValid = password.trim() !== ''
-	const isPasswordMatch = password === confirmPassword
-	const isFormValid = isEmailValid && isPasswordValid && isPasswordMatch
+	const handleChange = (e) => {
+		setFormData({
+			...formData,
+			[e.target.name]: e.target.value,
+		})
+	}
 
-	const handleSubmit = (e) => {
+	const validatePassword = (password) => {
+		const minLength = password.length >= 8
+		const hasUppercase = /[A-Z]/.test(password)
+		const hasLowercase = /[a-z]/.test(password)
+		const hasNumber = /[0-9]/.test(password)
+		const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+
+		return { minLength, hasUppercase, hasLowercase, hasNumber, hasSpecialChar }
+	}
+
+	const passwordCriteria = validatePassword(formData.password)
+	const isPasswordValid =
+		passwordCriteria.minLength &&
+		passwordCriteria.hasUppercase &&
+		passwordCriteria.hasLowercase &&
+		passwordCriteria.hasNumber &&
+		passwordCriteria.hasSpecialChar
+	const isPasswordMatch = formData.password === formData.confirmPassword
+
+	const isFormValid =
+		formData.nama && formData.email && isPasswordValid && isPasswordMatch
+
+	const handleSubmit = async (e) => {
 		e.preventDefault()
 		setFormSubmitted(true)
 
-		if (isFormValid) {
-			console.log('Form submitted:', { email, password })
+		if (!isFormValid) {
+			setErrorMessage('Harap isi semua kolom dengan benar.')
+			return
+		}
+
+		try {
+			const response = await fetch('http://localhost:8000/api/users', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					username: formData.nama.replace(/\s+/g, '').toLowerCase(),
+					nama_lengkap: formData.nama,
+					email: formData.email,
+					password: formData.password,
+					google_id: 'n238dhwidjmw',
+					avatar: 'default-avatar',
+					tanggal_lahir: '',
+					jenis_kelamin: 'laki-laki',
+					umur: 25,
+					lokasi: 'Indonesia',
+					minat: 'Teknologi',
+					institusi: 'Default Institution',
+					poin_saya: 0,
+					pekerjaan: 'Mahasiswa',
+					profilepic: 'default-profile-pic-url',
+				}),
+			})
+
+			console.log('Status Code:', response.status)
+			console.log('Headers:', response.headers)
+
+			if (!response.ok) {
+				const errorData = await response.json()
+				setErrorMessage(JSON.stringify(errorData))
+				return
+			}
+
+			const data = await response.json()
+			alert('Registrasi berhasil: ' + JSON.stringify(data))
+			setErrorMessage(null)
+		} catch (error) {
+			setErrorMessage(error.toString())
 		}
 	}
 
 	return (
-		<div className="min-h-screen flex items-center justify-center relative">
+		<div className="min-h-screen flex items-center justify-center relative font-inter">
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className="absolute top-0 left-0 w-full h-full z-10 bg-[#1F38DB] bg-opacity-80"
 			/>
-
 			<img
 				src={bgPage}
 				alt="Background"
@@ -49,15 +119,11 @@ const Register = () => {
 				transition={{ duration: 0.7, ease: 'easeInOut' }}
 				className="w-full sm:max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl bg-white p-8 rounded-[24px] shadow-md z-10 mx-4"
 			>
-				<form
-					onSubmit={handleSubmit}
-					className="flex flex-col items-center gap-6 md:gap-8"
-				>
+				<form onSubmit={handleSubmit} className="flex flex-col gap-6">
 					<motion.div
 						initial={{ y: -100, opacity: 0 }}
 						animate={{ y: 0, opacity: 1 }}
-						transition={{ duration: 0.7 }}
-						className="flex flex-col items-center gap-6 md:gap-4"
+						className="flex flex-col items-center gap-6"
 					>
 						<Link to="/">
 							<img
@@ -100,82 +166,97 @@ const Register = () => {
 					</div>
 
 					<div className="flex flex-col gap-4 w-full">
-						<label htmlFor="email" className="flex flex-col w-full items-start">
-							<span className="mb-2 text-xs sm:text-sm md:text-base text-gray-500">
-								E-mail
-							</span>
-							<motion.input
-								type="email"
-								id="email"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
-								placeholder="Masukkan E-mail Anda"
-								whileFocus={{ scale: 1.02 }}
+						<input
+							type="text"
+							name="nama"
+							placeholder="Nama Lengkap"
+							value={formData.nama}
+							onChange={handleChange}
+							className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						/>
+						<input
+							type="email"
+							name="email"
+							placeholder="Email"
+							value={formData.email}
+							onChange={handleChange}
+							className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						/>
+						<div className="relative">
+							<input
+								type={showPassword ? 'text' : 'password'}
+								name="password"
+								placeholder="Password"
+								value={formData.password}
+								onChange={handleChange}
+								className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500"
 							/>
-							{!isEmailValid && formSubmitted && (
-								<p className="text-xs sm:text-sm text-red-500 mt-1">
-									Email tidak boleh kosong.
-								</p>
-							)}
-						</label>
+							<button
+								type="button"
+								onClick={() => setShowPassword(!showPassword)}
+								className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+							>
+								{showPassword ? <FaEyeSlash /> : <FaEye />}
+							</button>
+						</div>
+						<input
+							type="password"
+							name="confirmPassword"
+							placeholder="Konfirmasi Password"
+							value={formData.confirmPassword}
+							onChange={handleChange}
+							className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						/>
 
-						<label
-							htmlFor="password"
-							className="flex flex-col w-full items-start"
-						>
-							<span className="mb-2 text-xs sm:text-sm md:text-base text-gray-500">
-								Kata Sandi
-							</span>
-							<div className="relative w-full">
-								<motion.input
-									type={showPassword ? 'text' : 'password'}
-									id="password"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500"
-									placeholder="Masukkan Kata Sandi Anda"
-									whileFocus={{ scale: 1.02 }}
-								/>
-								<button
-									type="button"
-									onClick={() => setShowPassword(!showPassword)}
-									className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+						<div className="text-sm">
+							<ul>
+								<li
+									className={`${
+										passwordCriteria.minLength
+											? 'text-green-500'
+											: 'text-gray-500'
+									}`}
 								>
-									{showPassword ? <FaEyeSlash /> : <FaEye />}
-								</button>
-							</div>
-							{!isPasswordValid && formSubmitted && (
-								<p className="text-xs sm:text-sm text-red-500 mt-1">
-									Kata sandi tidak boleh kosong.
-								</p>
-							)}
-						</label>
-
-						<label
-							htmlFor="confirmPassword"
-							className="flex flex-col w-full items-start"
-						>
-							<span className="mb-2 text-xs sm:text-sm md:text-base text-gray-500">
-								Konfirmasi Kata Sandi
-							</span>
-							<div className="relative w-full">
-								<motion.input
-									type="password"
-									id="confirmPassword"
-									value={confirmPassword}
-									onChange={(e) => setConfirmPassword(e.target.value)}
-									className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
-									placeholder="Konfirmasi Kata Sandi Anda"
-									whileFocus={{ scale: 1.02 }}
-								/>
-							</div>
-							{!isPasswordMatch && formSubmitted && (
-								<p className="text-xs sm:text-sm text-red-500 mt-1">
-									Kata sandi tidak cocok.
-								</p>
-							)}
-						</label>
+									✔ Minimal 8 karakter
+								</li>
+								<li
+									className={`${
+										passwordCriteria.hasUppercase
+											? 'text-green-500'
+											: 'text-gray-500'
+									}`}
+								>
+									✔ Huruf besar
+								</li>
+								<li
+									className={`${
+										passwordCriteria.hasLowercase
+											? 'text-green-500'
+											: 'text-gray-500'
+									}`}
+								>
+									✔ Huruf kecil
+								</li>
+								<li
+									className={`${
+										passwordCriteria.hasNumber
+											? 'text-green-500'
+											: 'text-gray-500'
+									}`}
+								>
+									✔ Angka
+								</li>
+								<li
+									className={`${
+										passwordCriteria.hasSpecialChar
+											? 'text-green-500'
+											: 'text-gray-500'
+									}`}
+								>
+									✔ Karakter khusus
+								</li>
+							</ul>
+						</div>
 					</div>
 
 					<motion.button
@@ -190,6 +271,8 @@ const Register = () => {
 						Daftar
 					</motion.button>
 				</form>
+
+				{errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
 			</motion.div>
 
 			<Helmet>

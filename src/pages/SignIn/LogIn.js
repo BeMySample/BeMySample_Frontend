@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import bgPage from '../../assets/images/bgLogin.png'
 import logoBeMySample from '../../assets/images/BeMySampleLogo_Transparent.png'
 import { FcGoogle } from 'react-icons/fc'
@@ -6,8 +7,10 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet'
 import { motion } from 'framer-motion'
+import axios from 'axios'
 
 const Login = () => {
+	const navigate = useNavigate()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [showPassword, setShowPassword] = useState(false)
@@ -16,6 +19,37 @@ const Login = () => {
 	const isEmailValid = email.trim() !== ''
 	const isPasswordValid = password.trim() !== ''
 	const isFormValid = isEmailValid && isPasswordValid
+
+	const handleGoogleLogin = async () => {
+		try {
+			window.location.href = 'http://localhost:8000/auth/google'
+		} catch (error) {
+			console.error('Google Login Error:', error)
+		}
+	}
+
+	useEffect(() => {
+		const fetchUserData = async () => {
+			const urlParams = new URLSearchParams(window.location.search)
+			if (urlParams.has('code')) {
+				try {
+					const response = await axios.get(
+						'http://localhost:8000/auth/google/callback',
+						{
+							withCredentials: true,
+						}
+					)
+					const userData = response.data.user
+					localStorage.setItem('user', JSON.stringify(userData))
+					navigate('/dashboard')
+				} catch (error) {
+					console.error('Error fetching user data:', error)
+				}
+			}
+		}
+
+		fetchUserData()
+	}, [])
 
 	const handleSubmit = (e) => {
 		e.preventDefault()
@@ -81,6 +115,7 @@ const Login = () => {
 						type="button"
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.95 }}
+						onClick={handleGoogleLogin}
 						className="flex items-center justify-center gap-4 px-6 py-3 w-full rounded-full border-2 border-gray-300"
 					>
 						<FcGoogle className="text-lg md:text-xl" />
@@ -158,13 +193,9 @@ const Login = () => {
 
 					<motion.button
 						onClick={() => (window.location.href = '/dashboard')}
-						// disabled={!isFormValid}
 						whileHover={{ scale: isFormValid ? 1.05 : 1 }}
 						whileTap={{ scale: 0.95 }}
-						className={`w-full px-6 py-3 rounded-full text-white font-medium transition ${
-							// isFormValid ? 'bg-blue-500' : 'bg-gray-400'
-							'bg-blue-500'
-						}`}
+						className={`w-full px-6 py-3 rounded-full text-white font-medium transition ${'bg-blue-500'}`}
 					>
 						Masuk
 					</motion.button>
