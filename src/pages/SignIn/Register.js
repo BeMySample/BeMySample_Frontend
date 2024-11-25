@@ -3,9 +3,10 @@ import bgPage from '../../assets/images/bgLogin.png'
 import logoBeMySample from '../../assets/images/BeMySampleLogo_Transparent.png'
 import { FcGoogle } from 'react-icons/fc'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet'
 import { motion } from 'framer-motion'
+import toast, { Toaster } from 'react-hot-toast'
 
 const Register = () => {
 	const [formData, setFormData] = useState({
@@ -92,15 +93,19 @@ const Register = () => {
 			}
 
 			const data = await response.json()
-			alert('Registrasi berhasil: ' + JSON.stringify(data))
+			// alert('Registrasi berhasil: ' + JSON.stringify(data))
+			toast.success('Registrasi berhasil!')
+			window.location.href = '/login'
 			setErrorMessage(null)
 		} catch (error) {
+			toast.error('Registrasi gagal!')
 			setErrorMessage(error.toString())
 		}
 	}
 
 	return (
 		<div className="min-h-screen flex items-center justify-center relative font-inter">
+			<Toaster position="top-center" reverseOrder={false} />
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}

@@ -106,9 +106,15 @@ const Dashboard = () => {
 
 			window.history.replaceState({}, document.title, '/dashboard')
 		} else {
-			const savedUser = JSON.parse(localStorage.getItem('user'))
+			const savedUser = localStorage.getItem('user')
 			if (savedUser) {
-				setUser(savedUser)
+				try {
+					const parsedUser = JSON.parse(savedUser)
+					setUser(parsedUser)
+				} catch (error) {
+					console.error('Error parsing user data:', error)
+					navigate('/login') // Redirect jika terjadi error parsing
+				}
 			} else {
 				navigate('/login')
 			}
@@ -204,7 +210,7 @@ const Dashboard = () => {
 							onClick={onLogout}
 						>
 							<Icon icon="mdi:logout" className="mr-2 text-lg" />
-							Logout
+							Keluar
 						</button>
 					</div>
 				)}

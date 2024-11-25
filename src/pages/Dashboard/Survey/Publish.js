@@ -5,6 +5,11 @@ import NavBar from '../../../components/Navbar'
 import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
 import ProfilePict from '../../../assets/images/profilepict.png'
 import { Icon } from '@iconify/react'
+import defaultCover from '../../../assets/images/defaultCover.png'
+import decor1 from '../../../assets/images/section1publish.png'
+import footerDecorUnpublished from '../../../assets/images/groupFooterUnpublished.png'
+import footerUnpublished from '../../../assets/images/footerGrayscalePublish.png'
+import penguinFooterPublish from '../../../assets/images/penguinFooterPublish.png'
 import { Helmet } from 'react-helmet'
 import DesktopContent from '../../../components/SurveyEdit/Publish/DesktopContent'
 import MobileContent from '../../../components/SurveyEdit/Publish/MobileContent'
@@ -149,6 +154,22 @@ const Publish = () => {
 		}
 	}, [navigate])
 
+	const [selectedImage, setSelectedImage] = useState(defaultCover)
+
+	const handleReplaceImage = () => {
+		const inputElement = document.createElement('input')
+		inputElement.type = 'file'
+		inputElement.accept = 'image/*'
+		inputElement.style.display = 'none'
+		inputElement.addEventListener('change', (event) => {
+			const file = event.target.files[0]
+			if (file) {
+				setSelectedImage(URL.createObjectURL(file))
+			}
+		})
+		inputElement.click() // Membuka dialog file
+	}
+
 	return (
 		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
 			<NavBar
@@ -207,9 +228,14 @@ const Publish = () => {
 			<Toaster position="top-right" />
 			<div className="min-h-20" />
 
-			<div className="flex flex-row gap-4 m-4">
-				<div className="bg-white p-4 rounded-lg shadow-lg w-[500px]">
-					<h3 className="text-xl font-semibold mb-2">Siapa respondennya?</h3>
+			<div className="flex flex-row gap-4 m-7 justify-center z-10">
+				<div className="bg-white p-7 rounded-lg shadow-lg w-[500px] relative overflow-clip h-full">
+					<div className="size-[84px] absolute -top-9 -right-9 bg-[#1F38DB] flex items-center justify-center rounded-full">
+						<p className="absolute bottom-4 left-6 text-white font-lg">1</p>
+					</div>
+					<h3 className="text-xl font-semibold mb-2 text-[#1F38DB]">
+						Siapa respondennya?
+					</h3>
 					<p className="text-[#757575] font-inter">
 						Tentukan kriteria responden. Biarkan kosong apabila tidak ingin
 						menentukan kriteria.
@@ -249,111 +275,337 @@ const Publish = () => {
 
 					<div>
 						<form className="flex flex-col gap-4 mt-4">
-							<div className="flex flex-col gap-2">
-								<label className="text-gray-800">Rentang Usia</label>
-								<div className="flex flex-row gap-2">
+							<div className="flex flex-row items-center">
+								<label className="text-gray-800 min-w-44">Rentang Usia</label>
+								<div className="flex flex-row gap-2 items-center">
 									<input
 										type="number"
 										placeholder="Minimum"
-										className="w-1/2 p-2 rounded border border-gray-300 bg-white"
+										className="p-2 rounded border border-gray-300 bg-white w-full"
 									/>
+									<p>-</p>
 									<input
 										type="number"
 										placeholder="Maksimum"
-										className="w-1/2 p-2 rounded border border-gray-300 bg-white"
+										className="p-2 rounded border border-gray-300 bg-white w-full"
 									/>
 								</div>
 							</div>
-							<div className="flex flex-col gap-2">
-								<label className="text-gray-800">Lokasi</label>
+							<div className="flex flex-row items-center">
+								<label className="text-gray-800 min-w-44">Lokasi</label>
 								<input
 									type="text"
-									placeholder="Masukkan lokasi"
-									className="p-2 rounded border border-gray-300 bg-white"
+									placeholder="Provinsi, kota, ..."
+									className="p-2 rounded border border-gray-300 bg-white w-full"
 								/>
 							</div>
-							<div className="flex flex-col gap-2">
-								<label className="text-gray-800">Hobi</label>
+							<div className="flex flex-row items-center">
+								<label className="text-gray-800 min-w-44">Hobi</label>
 								<input
 									type="text"
-									placeholder="Masukkan hobi"
-									className="p-2 rounded border border-gray-300 bg-white"
+									placeholder="Membaca, berolahraga, ..."
+									className="p-2 rounded border border-gray-300 bg-white w-full"
 								/>
 							</div>
-							<div className="flex flex-col gap-2">
-								<label className="text-gray-800">Pekerjaan</label>
+							<div className="flex flex-row items-center">
+								<label className="text-gray-800 min-w-44">Pekerjaan</label>
 								<input
 									type="text"
-									placeholder="Masukkan pekerjaan"
-									className="p-2 rounded border border-gray-300 bg-white"
+									placeholder="Pegawai, pelajar, ..."
+									className="p-2 rounded border border-gray-300 bg-white w-full"
 								/>
 							</div>
-							<div className="flex flex-col gap-2">
-								<label className="text-gray-800">Tempat Bekerja</label>
+							<div className="flex flex-row items-center">
+								<label className="text-gray-800 min-w-44">Tempat Bekerja</label>
 								<input
 									type="text"
-									placeholder="Masukkan penghasilan"
-									className="p-2 rounded border border-gray-300 bg-white"
+									placeholder="Nama perusahaan"
+									className="p-2 rounded border border-gray-300 bg-white w-full"
+								/>
+							</div>
+							<div className="w-full bg-[#E6E6E6] rounded-lg flex flex-col gap-1 items-center justify-center py-4">
+								<span className="text-[#2073DB] text-2xl font-semibold">0</span>
+								<span>Pengguna yang cocok</span>
+							</div>
+							<div className="flex flex-row items-center justify-between relative">
+								<div className="flex flex-col items-start w-48">
+									<div className="flex flex-row items-center gap-1">
+										<Icon icon="icons8:idea" className="text-[#421FDB]" />
+										<span className="text-[#757575] text-sm font-bold font-['Inter']">
+											Tip
+										</span>
+										<span className="text-[#757575] text-sm font-normal font-['Inter']">
+											{' '}
+											Survei yang baik
+										</span>
+									</div>
+									<span className="text-[#757575] text-sm font-normal font-['Inter']">
+										harus tepat sasaran. Sesuaikan pengaturan responden dengan
+										kebutuhan Anda
+									</span>
+								</div>
+								<img
+									src={decor1}
+									alt="decor1"
+									className="w-64 absolute -bottom-9 -right-7"
 								/>
 							</div>
 						</form>
 					</div>
 				</div>
 
-				<div className="bg-white p-4 rounded-lg shadow-lg w-[500px]">
-					<h3 className="text-xl font-semibold mb-2 w-full">
-						Berapa targetnya?
-					</h3>
-					<p className="text-[#757575] font-inter w-full">
-						Jumlah MyPoin yang akan dikeluarkan dan target responden
-					</p>
+				<div className="flex flex-col items-center gap-4 z-20">
+					<div className="flex flex-row gap-4 h-2/3">
+						<div className="bg-white p-7 rounded-lg shadow-lg w-[500px] relative overflow-clip">
+							<div className="size-[84px] absolute -top-9 -right-9 bg-[#1F38DB] flex items-center justify-center rounded-full">
+								<p className="absolute bottom-4 left-6 text-white font-lg">2</p>
+							</div>
+							<h3 className="text-xl font-semibold mb-2 w-full text-[#1F38DB]">
+								Berapa targetnya?
+							</h3>
+							<p className="text-[#757575] font-inter w-full">
+								Jumlah MyPoin yang akan dikeluarkan dan target responden
+							</p>
 
-					<div className="w-full">
-						<form className="flex flex-col gap-4 mt-4">
-							<div className="flex flex-col gap-2">
-								<label className="text-gray-800">Target Responden</label>
-								<div className="flex flex-row gap-2">
-									<input
-										type="number"
-										placeholder="Misal: 20"
-										className="p-2 rounded border border-gray-300 bg-white"
-									/>
+							<div className="w-full">
+								<form className="flex flex-col gap-4 mt-4">
+									<div className="flex flex-row items-center">
+										<label className="text-gray-800 min-w-44">
+											Target Responden
+										</label>
+										<input
+											type="number"
+											placeholder="Misal: 20"
+											className="p-2 rounded border border-gray-300 bg-white w-full"
+										/>
+									</div>
+									<div className="flex flex-row items-center">
+										<label className="text-gray-800 min-w-44">
+											MyPoin untuk setiap responden
+										</label>
+										<input
+											type="text"
+											placeholder="Misal: 200"
+											className="p-2 rounded border border-gray-300 bg-white w-full"
+										/>
+									</div>
+									<div className="mb-4 border border-[#757575]" />
+								</form>
+							</div>
+
+							<div className="flex flex-col gap-4">
+								<div className="flex flex-row gap-4 items-center justify-between">
+									<p className="text-gray-800">Total MyPoin yang dikeluarkan</p>
+									<p className="font-semibold">0</p>
+								</div>
+
+								<div className="flex flex-row gap-4 items-center justify-between">
+									<p className="text-gray-800">MyPoin saya</p>
+									<p className="">200.000</p>
 								</div>
 							</div>
-							<div className="flex flex-col gap-2">
-								<label className="text-gray-800">
-									MyPoin untuk setiap responden
-								</label>
-								<input
-									type="text"
-									placeholder="Misal: 200"
-									className="p-2 rounded border border-gray-300 bg-white"
-								/>
+
+							<div className="my-4 border border-[#757575]" />
+
+							<div className="flex flex-row gap-4 items-center justify-between">
+								<p className="text-gray-800">Sisa MyPoin</p>
+								<p className="text-[#14AE5C]">200.000</p>
 							</div>
-							<div className="mb-4 border border-[#757575]" />
-						</form>
-					</div>
-
-					<div className="flex flex-col gap-4">
-						<div className="flex flex-row gap-4 items-center justify-between">
-							<p className="text-gray-800">Total MyPoin yang dikeluarkan</p>
-							<p className="font-semibold">0</p>
 						</div>
 
-						<div className="flex flex-row gap-4 items-center justify-between">
-							<p className="text-gray-800">MyPoin saya</p>
-							<p className="">200.000</p>
+						<div className="bg-white p-7 rounded-lg shadow-lg w-[500px] relative overflow-clip h-full">
+							<div className="size-[84px] absolute -top-9 -right-9 bg-[#1F38DB] flex items-center justify-center rounded-full">
+								<p className="absolute bottom-4 left-6 text-white font-lg">3</p>
+							</div>
+							<h3 className="text-xl font-semibold mb-2 w-full text-[#1F38DB]">
+								Bagaimana Survei Anda Tampil?
+							</h3>
+							<p className="text-[#757575] font-inter w-full">
+								Kustomisasikan dan buat survei Anda menarik
+							</p>
+
+							<div className="w-full">
+								<form className="flex flex-col gap-4 mt-4">
+									<div className="flex flex-row items-center">
+										<label className="text-gray-800 min-w-44">Judul</label>
+										<input
+											type="text"
+											placeholder="Judul survei"
+											className="p-2 rounded border border-gray-300 bg-white w-full"
+										/>
+									</div>
+
+									<div className="flex flex-row items-start">
+										<label className="text-gray-800 min-w-44">Sampul</label>
+										<div
+											className="relative w-full h-32 rounded border cursor-pointer hover:opacity-80"
+											onClick={handleReplaceImage} // Klik untuk mengganti gambar
+										>
+											<img
+												src={selectedImage}
+												alt="Preview Sampul"
+												className="w-full h-full object-cover rounded"
+											/>
+											<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
+												<p className="text-white text-sm font-medium">
+													Klik untuk Ganti Gambar
+												</p>
+											</div>
+										</div>
+									</div>
+
+									<div className="flex flex-row items-start">
+										<label className="text-gray-800 min-w-44">Deskripsi</label>
+										<input
+											type="text"
+											placeholder="Apa tujuan survei ini?"
+											className="p-2 rounded border border-gray-300 bg-white w-full"
+										/>
+									</div>
+
+									<div className="flex flex-row items-start">
+										<label className="text-gray-800 min-w-44">Isi Konten</label>
+										<div className="flex flex-row gap-2 items-center w-full">
+											<div className="flex flex-row items-center justify-center bg-[#E6E6E6] rounded-xl px-4 py-2 w-full">
+												<p className="flex flex-col items-center gap-0.5">
+													<span className="text-[#2073DB] text-2xl font-semibold">
+														6
+													</span>
+													<span>Pertanyaan</span>
+												</p>
+											</div>
+											<div className="flex flex-row items-center justify-center bg-[#E6E6E6] rounded-xl px-4 py-2 w-full">
+												<p className="flex flex-col items-center gap-0.5">
+													<span className="text-[#2073DB] text-2xl font-semibold">
+														3
+													</span>
+													<span>Lainnya</span>
+												</p>
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
 						</div>
 					</div>
 
-					<div className="my-4 border border-[#757575]" />
+					<div className="bg-white rounded-lg shadow-lg w-full h-1/3 relative overflow-clip flex items-center justify-between">
+						<div className="bg-gradient-to-r from-white from-40% to-80% to-transparent h-full rounded-lg w-full absolute px-12 flex items-center backdrop-blur-[2px]">
+							<div className="flex items-start justify-start w-full">
+								<div className="flex flex-col items-center justify-start gap-2 w-[40%]">
+									<p className="text-2xl text-[#1F38DB] font-bold">
+										Siap Meluncurkan?
+									</p>
+									<p className="w-full text-center">
+										Tinjau dan bagikan survei dengan berbagai cara atau
+										publikasikan di BeMySample
+									</p>
+									<button className="px-6 py-2 bg-[#1F38DB] flex flex-row items-center justify-center gap-2 rounded-lg mt-2 text-white">
+										<Icon icon="mingcute:rocket-fill" />
+										<p>Luncurkan</p>
+									</button>
+								</div>
+							</div>
+						</div>
+						<div className="py-7 px-16 w-full h-1/3 flex items-center justify-between">
+							<div className="size-[84px] absolute -top-9 -right-9 bg-[#1F38DB] flex items-center justify-center rounded-full">
+								<p className="absolute bottom-4 left-6 text-white font-lg">4</p>
+							</div>
 
-					<div className="flex flex-row gap-4 items-center justify-between">
-						<p className="text-gray-800">Sisa MyPoin</p>
-						<p className="text-[#14AE5C]">200.000</p>
+							<div className="flex flex-col items-start gap-1">
+								<p className="text-2xl text-[#1F38DB] font-bold">
+									Sudah Meluncur!
+								</p>
+								<div className="w-[200px]">
+									<span className="text-[#757575] font-normal font-['Inter']">
+										Hentikan respons atau ubah pengaturan lainnya di menu{' '}
+									</span>
+									<span className="text-[#757575] font-bold font-['Inter']">
+										Hasil
+									</span>
+								</div>
+							</div>
+
+							<div className="w-[55%]">
+								<div className="flex items-center border border-[#757575] rounded-lg px-4 py-2">
+									<input
+										type="text"
+										value="bemysample.com/NSDsksD293"
+										readOnly
+										className="flex-1 bg-transparent text-sm text-gray-700 outline-none"
+									/>
+
+									<div className="flex items-center gap-2">
+										<button className="w-7 h-7">
+											<Icon
+												icon="mingcute:qrcode-fill"
+												className="text-gray-600"
+												fontSize={20}
+											/>
+										</button>
+										<button className="w-7 h-7">
+											<Icon
+												icon="mdi:content-copy"
+												className="text-gray-600"
+												fontSize={20}
+											/>
+										</button>
+									</div>
+								</div>
+
+								<div className="flex items-center justify-start gap-3 mt-4 w-full">
+									<button className="h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 w-full border border-[#757575]">
+										<Icon
+											icon="ic:baseline-email"
+											className="text-gray-600 w-6 h-6"
+										/>
+									</button>
+									<button className="h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 w-full border border-[#757575]">
+										<Icon
+											icon="ic:baseline-whatsapp"
+											className="text-gray-600 w-6 h-6"
+										/>
+									</button>
+									<button className="h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 w-full border border-[#757575]">
+										<Icon
+											icon="ic:baseline-facebook"
+											className="text-gray-600 w-6 h-6"
+										/>
+									</button>
+									<button className="h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 w-full border border-[#757575]">
+										<Icon
+											icon="prime:twitter"
+											className="text-gray-600 w-6 h-6"
+										/>
+									</button>
+									<button className="h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 w-full border border-[#757575]">
+										<Icon
+											icon="mdi:linkedin"
+											className="text-gray-600 w-6 h-6"
+										/>
+									</button>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
+			{/* <img
+				src={footerDecorUnpublished}
+				alt="footerDecorUnpublished"
+				className="w-full absolute bottom-0 left-0 right-0"
+			/> */}
+			<img
+				src={footerUnpublished}
+				alt="footerUnpublished"
+				className="w-full absolute bottom-0 left-0 right-0"
+			/>
+
+			<img
+				src={penguinFooterPublish}
+				alt="penguinFooterPublish"
+				className="w-56 absolute bottom-0 right-0"
+			/>
 
 			<Helmet>
 				<title>{surveyTitle} - Pratinjau Survei | BeMySample</title>

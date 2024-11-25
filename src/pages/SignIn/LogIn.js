@@ -7,6 +7,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet'
 import { motion } from 'framer-motion'
+import ProfilePict from '../../assets/images/profilepict.png'
 import axios from 'axios'
 
 const Login = () => {
@@ -57,6 +58,29 @@ const Login = () => {
 
 		if (isFormValid) {
 			console.log('Form submitted:', { email, password })
+		}
+	}
+
+	const handleEmailLogin = async () => {
+		try {
+			const response = await axios.post('http://localhost:8000/api/login', {
+				email,
+				password,
+			})
+
+			const { access_token, user } = response.data
+
+			// Pastikan semua data yang diperlukan tersimpan
+			const userData = {
+				name: user.name || 'Guest User', // Tambahkan fallback jika name tidak ada
+				avatar: user.avatar || ProfilePict,
+				token: access_token,
+			}
+
+			localStorage.setItem('user', JSON.stringify(userData))
+			navigate('/dashboard')
+		} catch (error) {
+			console.error('Error logging in:', error.response?.data || error.message)
 		}
 	}
 
@@ -113,10 +137,10 @@ const Login = () => {
 
 					<motion.button
 						type="button"
-						whileHover={{ scale: 1.05 }}
+						whileHover={{ scale: 1.0 }}
 						whileTap={{ scale: 0.95 }}
 						onClick={handleGoogleLogin}
-						className="flex items-center justify-center gap-4 px-6 py-3 w-full rounded-full border-2 border-gray-300"
+						className="flex items-center justify-center gap-4 px-6 py-3 w-full rounded-2xl border-2 border-gray-300 hover:bg-gray-200 transition-all duration-300"
 					>
 						<FcGoogle className="text-lg md:text-xl" />
 						<span className="font-inter text-sm sm:text-base md:text-lg">
@@ -144,7 +168,7 @@ const Login = () => {
 								onChange={(e) => setEmail(e.target.value)}
 								className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
 								placeholder="Masukkan E-mail Anda"
-								whileFocus={{ scale: 1.02 }}
+								whileFocus={{ scale: 1.0 }}
 							/>
 							{!isEmailValid && formSubmitted && (
 								<p className="text-xs sm:text-sm text-red-500 mt-1">
@@ -168,7 +192,7 @@ const Login = () => {
 									onChange={(e) => setPassword(e.target.value)}
 									className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500"
 									placeholder="Masukkan Kata Sandi Anda"
-									whileFocus={{ scale: 1.02 }}
+									whileFocus={{ scale: 1.0 }}
 								/>
 								<button
 									type="button"
@@ -192,10 +216,10 @@ const Login = () => {
 					</div>
 
 					<motion.button
-						onClick={() => (window.location.href = '/dashboard')}
+						onClick={handleEmailLogin}
 						whileHover={{ scale: isFormValid ? 1.05 : 1 }}
 						whileTap={{ scale: 0.95 }}
-						className={`w-full px-6 py-3 rounded-full text-white font-medium transition ${'bg-blue-500'}`}
+						className={`w-full px-6 py-3 rounded-2xl text-white font-medium transition ${'bg-blue-500'} hover:bg-blue-600`}
 					>
 						Masuk
 					</motion.button>

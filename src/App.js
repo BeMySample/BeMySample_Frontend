@@ -19,6 +19,8 @@ import Preview from './pages/Dashboard/Survey/Preview'
 import Register from './pages/SignIn/Register'
 import Publish from './pages/Dashboard/Survey/Publish'
 import Users from './pages/Users'
+import { Toaster } from 'react-hot-toast'
+import Results from './pages/Dashboard/Survey/Results'
 
 const App = () => {
 	return (
@@ -76,6 +78,7 @@ const Content = () => {
 
 	return (
 		<div>
+			<Toaster />
 			{location.pathname === '/' && (
 				<NavBar
 					childrenLeft={
@@ -190,6 +193,7 @@ const Content = () => {
 				<Route path="/survey/edit/:id" element={<Edit />} />
 				<Route path="/survey/preview/:id" element={<Preview />} />
 				<Route path="/survey/publish/:id" element={<Publish />} />
+				<Route path="/survey/results/:id" element={<Results />} />
 
 				<Route path="/db/users" element={<Users />} />
 				<Route path="*" element={<Page404 />} />
