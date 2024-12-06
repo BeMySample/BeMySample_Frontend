@@ -12,15 +12,34 @@ import axios from 'axios'
 
 const Login = () => {
 	const navigate = useNavigate()
+	const [user, setUser] = useState(null)
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [showPassword, setShowPassword] = useState(false)
 	const [formSubmitted, setFormSubmitted] = useState(false)
 
-	const isEmailValid = email.trim() !== ''
-	const isPasswordValid = password.trim() !== ''
-	const isFormValid = isEmailValid && isPasswordValid
+	// Mengecek apakah token ada di cookie
+	useEffect(() => {
+		// Fungsi untuk cek apakah token ada di cookie dan valid
+		const checkAuthStatus = async () => {
+			try {
+				const response = await axios.get('http://localhost:8000/api/user', {
+					withCredentials: true, // Kirim cookie
+				})
 
+				if (response.data) {
+					// Jika token valid, redirect ke dashboard
+					navigate('/dashboard')
+				}
+			} catch (error) {
+				console.log('User not authenticated', error)
+			}
+		}
+
+		checkAuthStatus()
+	}, [navigate])
+
+	// Fungsi untuk login menggunakan Google
 	const handleGoogleLogin = async () => {
 		try {
 			window.location.href = 'http://localhost:8000/auth/google'
@@ -29,28 +48,9 @@ const Login = () => {
 		}
 	}
 
-	useEffect(() => {
-		const fetchUserData = async () => {
-			const urlParams = new URLSearchParams(window.location.search)
-			if (urlParams.has('code')) {
-				try {
-					const response = await axios.get(
-						'http://localhost:8000/auth/google/callback',
-						{
-							withCredentials: true,
-						}
-					)
-					const userData = response.data.user
-					localStorage.setItem('user', JSON.stringify(userData))
-					navigate('/dashboard')
-				} catch (error) {
-					console.error('Error fetching user data:', error)
-				}
-			}
-		}
-
-		fetchUserData()
-	}, [])
+	const isEmailValid = email.trim() !== ''
+	const isPasswordValid = password.trim() !== ''
+	const isFormValid = isEmailValid && isPasswordValid
 
 	const handleSubmit = (e) => {
 		e.preventDefault()
@@ -61,28 +61,32 @@ const Login = () => {
 		}
 	}
 
-	const handleEmailLogin = async () => {
-		try {
-			const response = await axios.post('http://localhost:8000/api/login', {
-				email,
-				password,
-			})
+	// const handleEmailLogin = async () => {
+	// 	try {
+	// 		const response = await axios.post(
+	// 			'http://localhost:8000/api/login',
+	// 			{
+	// 				email,
+	// 				password,
+	// 			},
+	// 			{
+	// 				withCredentials: true,
+	// 			}
+	// 		)
 
-			const { access_token, user } = response.data
+	// 		const { user } = response.data
 
-			// Pastikan semua data yang diperlukan tersimpan
-			const userData = {
-				name: user.name || 'Guest User', // Tambahkan fallback jika name tidak ada
-				avatar: user.avatar || ProfilePict,
-				token: access_token,
-			}
+	// 		const userData = {
+	// 			name: user.name || 'Guest User',
+	// 			avatar: user.avatar || ProfilePict,
+	// 		}
 
-			localStorage.setItem('user', JSON.stringify(userData))
-			navigate('/dashboard')
-		} catch (error) {
-			console.error('Error logging in:', error.response?.data || error.message)
-		}
-	}
+	// 		localStorage.setItem('user', JSON.stringify(userData))
+	// 		navigate('/dashboard')
+	// 	} catch (error) {
+	// 		console.error('Error logging in:', error.response?.data || error.message)
+	// 	}
+	// }
 
 	return (
 		<div className="min-h-screen flex items-center justify-center relative font-inter">
@@ -216,7 +220,7 @@ const Login = () => {
 					</div>
 
 					<motion.button
-						onClick={handleEmailLogin}
+						// onClick={handleEmailLogin}
 						whileHover={{ scale: isFormValid ? 1.05 : 1 }}
 						whileTap={{ scale: 0.95 }}
 						className={`w-full px-6 py-3 rounded-2xl text-white font-medium transition ${'bg-blue-500'} hover:bg-blue-600`}

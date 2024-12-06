@@ -14,6 +14,7 @@ const SurveyCard = ({
 	onDelete,
 	isActive,
 	onToggleMenu,
+	isCreatedByAI,
 }) => {
 	const menuRef = useRef(null)
 
@@ -56,7 +57,15 @@ const SurveyCard = ({
 					/>
 				</div>
 				<div className="px-4 md:px-8">
-					<p className="font-bold font-inter text-[16px]">{title}</p>
+					<div className="flex flex-row gap-2 items-center mb-2">
+						<p className="font-bold font-inter text-[16px]">{title}</p>
+						{isCreatedByAI && (
+							<span className="flex flex-row gap-2 items-center bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full px-3 py-1.5 text-white text-sm">
+								<p>AI</p>
+								<Icon icon="ri:gemini-fill" fontSize={16} />
+							</span>
+						)}
+					</div>
 					<div className="flex flex-row gap-[16px] flex-wrap">
 						<div className="flex flex-row items-center gap-2 font-inter">
 							<Icon

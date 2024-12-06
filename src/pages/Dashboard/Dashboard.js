@@ -9,6 +9,7 @@ import NavBar from '../../components/Navbar'
 import logoBeMySample from '../../assets/images/BeMySampleLogo_Transparent.png'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import ProfilePict from '../../assets/images/profilepict.png'
+import axios from 'axios'
 
 const LOCAL_STORAGE_KEY = 'surveyData'
 
@@ -86,38 +87,32 @@ const saveNewSurveyToLocalStorage = (surveyId) => {
 }
 
 const Dashboard = () => {
-	const [user, setUser] = useState({ name: '', avatar: '' })
 	const navigate = useNavigate()
+	const [user, setUser] = useState(null)
 
 	useEffect(() => {
-		const params = new URLSearchParams(window.location.search)
-		const name = params.get('name')
-		let avatar = params.get('avatar')
-		const token = params.get('token')
-
-		if (avatar && avatar.includes('=s96-c')) {
-			avatar = avatar.replace('=s96-c', '')
+		const fetchUserData = async () => {
+			try {
+				const response = await axios.get('http://localhost:8000/api/user', {
+					withCredentials: true,
+				})
+				setUser(response.data)
+			} catch (error) {
+				console.error('Error fetching user data:', error)
+			}
 		}
 
-		if (name && avatar && token) {
-			const userData = { name, avatar, token }
-			localStorage.setItem('user', JSON.stringify(userData))
-			setUser(userData)
+		fetchUserData()
+	}, []) // Tidak ada dependensi, jadi hanya sekali saat komponen mount
 
-			window.history.replaceState({}, document.title, '/dashboard')
-		} else {
-			const savedUser = localStorage.getItem('user')
-			if (savedUser) {
-				try {
-					const parsedUser = JSON.parse(savedUser)
-					setUser(parsedUser)
-				} catch (error) {
-					console.error('Error parsing user data:', error)
-					navigate('/login') // Redirect jika terjadi error parsing
-				}
-			} else {
-				navigate('/login')
-			}
+	useEffect(() => {
+		const token = document.cookie.replace(
+			/(?:(?:^|.*;\s*)bemysample\s*\=\s*([^;]*).*$)|^.*$/,
+			'$1'
+		)
+
+		if (token) {
+			navigate('/dashboard') // Jika ada token, seharusnya diarahkan ke dashboard, bukan ke login
 		}
 	}, [navigate])
 
@@ -181,6 +176,11 @@ const Dashboard = () => {
 
 		const toggleMenu = () => setIsMenuOpen((prev) => !prev)
 
+		// Render jika user sudah ada
+		if (!user) {
+			return <div>Loading...</div> // Atau komponen loading lainnya
+		}
+
 		return (
 			<div className="relative">
 				{/* Profile Section */}
@@ -189,12 +189,13 @@ const Dashboard = () => {
 					onClick={toggleMenu}
 				>
 					<img
-						src={user?.avatar || ProfilePict}
-						alt="profile"
-						className="w-10 h-10 rounded-full"
+						src={user.avatar || ProfilePict}
+						alt="Profile"
+						className="h-8 w-8 rounded-full"
 					/>
 					<p>
-						Halo, <b className="text-[#1F38DB]">{user.name}</b>!
+						Halo,{' '}
+						<b className="text-[#1F38DB]">{user.nama_lengkap || 'User'}</b>!
 					</p>
 					<Icon icon="ep:arrow-down-bold" />
 				</div>
@@ -218,9 +219,22 @@ const Dashboard = () => {
 		)
 	}
 
-	const handleLogout = () => {
-		localStorage.removeItem('user')
-		navigate('/login')
+	const handleLogout = async () => {
+		try {
+			// Mengirim request logout ke backend
+			const response = await axios.post(
+				'http://localhost:8000/api/logout',
+				{},
+				{ withCredentials: true }
+			)
+
+			console.log('Logout response:', response.data)
+
+			// Redirect ke halaman login
+			navigate('/login')
+		} catch (error) {
+			console.error('Error logging out:', error)
+		}
 	}
 
 	return (

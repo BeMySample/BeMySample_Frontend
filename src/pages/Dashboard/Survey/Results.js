@@ -6,13 +6,9 @@ import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
 import ProfilePict from '../../../assets/images/profilepict.png'
 import { Icon } from '@iconify/react'
 import defaultCover from '../../../assets/images/defaultCover.png'
-import decor1 from '../../../assets/images/section1publish.png'
-import footerDecorUnpublished from '../../../assets/images/groupFooterUnpublished.png'
-import footerUnpublished from '../../../assets/images/footerGrayscalePublish.png'
 import penguinFooterPublish from '../../../assets/images/penguinFooterPublish.png'
 import { Helmet } from 'react-helmet'
-import DesktopContent from '../../../components/SurveyEdit/Publish/DesktopContent'
-import MobileContent from '../../../components/SurveyEdit/Publish/MobileContent'
+import ProgressBar from '@ramonak/react-progress-bar'
 
 const LOCAL_STORAGE_KEY = 'surveyData'
 
@@ -102,23 +98,6 @@ const Results = () => {
 		setUnsavedChanges(true)
 	}
 
-	const handleSectionChange = (sectionId) => {
-		setActiveSection(sectionId)
-
-		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-		const surveyData = savedData[id] || {}
-		const sectionData = savedData[id]?.data[sectionId] || {}
-		setContentText(sectionData.contentText || '')
-
-		setButtonText(sectionData.buttonText || 'Mulai')
-		setBackgroundImage(surveyData.backgroundImage || null)
-		setBgColor(surveyData.bgColor || '#FFFFFF')
-		setButtonColor(sectionData.buttonColor || '#1F38DB')
-		setTextColor(sectionData.textColor || '#000000')
-		setTitle(sectionData.title || 'Isi Judul di sini')
-		setDescription(sectionData.description || 'Isi deskripsi di sini')
-	}
-
 	const [activeMenu, setActiveMenu] = useState('Hasil')
 
 	const handleMenuClick = (menu) => {
@@ -154,21 +133,33 @@ const Results = () => {
 		}
 	}, [navigate])
 
-	const [selectedImage, setSelectedImage] = useState(defaultCover)
-
-	const handleReplaceImage = () => {
-		const inputElement = document.createElement('input')
-		inputElement.type = 'file'
-		inputElement.accept = 'image/*'
-		inputElement.style.display = 'none'
-		inputElement.addEventListener('change', (event) => {
-			const file = event.target.files[0]
-			if (file) {
-				setSelectedImage(URL.createObjectURL(file))
-			}
-		})
-		inputElement.click() // Membuka dialog file
-	}
+	const data = [
+		{
+			icon: 'ph:gender-intersex-duotone',
+			label: 'Gender',
+			value: 'Semua',
+		},
+		{
+			icon: 'oui:number',
+			label: 'Usia',
+			value: 'Minimal 18 th.',
+		},
+		{
+			icon: 'basil:location-solid',
+			label: 'Lokasi',
+			value: 'Semua',
+		},
+		{
+			icon: 'bxs:briefcase',
+			label: 'Pekerjaan',
+			value: 'Semua',
+		},
+		{
+			icon: 'vaadin:office',
+			label: 'Tempat Bekerja',
+			value: 'Semua',
+		},
+	]
 
 	return (
 		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
@@ -229,8 +220,85 @@ const Results = () => {
 			<div className="min-h-20" />
 
 			<div className="flex flex-row gap-4 m-7 justify-center z-10">
-				<div className='bg-[#1F38DB] h-20 rounded-lg w-full'>
+				<div className="p-3 rounded-xl bg-white flex flex-col items-start gap-3 w-full">
+					<img src={defaultCover} alt="defaultCover" className="w-full h-24" />
+					<p className="text-center text-lg font-bold w-">{surveyTitle}</p>
+					<hr className="w-full" />
+					<p className="text-center text-sm text-gray-500">
+						Survei ini bertujuan mengetahui preferensi para pemilih tetap dengan
+						meminta mereka menentukan bagaimana proses yang ingin mereka lakukan
+						untuk menge-vote pada periode berikutnya
+					</p>
+					<hr className="w-full" />
+					<div className="flex flex-wrap gap-2">
+						{data.map((item, index) => (
+							<div
+								key={index}
+								className="flex flex-row gap-2.5 items-center rounded bg-[#F5F5F5] p-2"
+							>
+								<Icon
+									fontSize={24}
+									icon={item.icon}
+									className="text-[#5A5A5A]"
+								/>
+								<div className="flex flex-col items-start gap-0.5 text-xs text-[#757575]">
+									<b>{item.label}</b>
+									<p>{item.value}</p>
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
 
+				<div className="p-3 rounded-xl bg-white flex flex-col items-start gap-3 w-full">
+					<ProgressBar
+						completed={90}
+						bgColor="#2073DB"
+						height="20px"
+						width="300px"
+					/>
+					<div>
+						<p>
+							Sedikit lagi! Yuk, terus bagikan surveimu untuk mencapai target
+						</p>
+					</div>
+					<hr className="w-full" />
+					<div className="flex flex-row gap-2 items-center w-full">
+						<div className="flex flex-row items-center justify-center bg-[#E6E6E6] rounded-xl px-4 py-2 w-full">
+							<p className="flex flex-col items-center gap-0.5">
+								<span className="text-[#2073DB] text-2xl font-semibold">
+									210
+								</span>
+								<span>Melihat</span>
+							</p>
+						</div>
+						<div className="flex flex-row items-center justify-center bg-[#E6E6E6] rounded-xl px-4 py-2 w-full">
+							<p className="flex flex-col items-center gap-0.5">
+								<span className="text-[#2073DB] text-2xl font-semibold">
+									13
+								</span>
+								<span>Drop-off</span>
+							</p>
+						</div>
+						<div className="flex flex-row items-center justify-center bg-[#E6E6E6] rounded-xl px-4 py-2 w-full">
+							<p className="flex flex-col items-center gap-0.5">
+								<span className="text-[#2073DB] text-2xl font-semibold">
+									190
+								</span>
+								<span>Menyelesaikan</span>
+							</p>
+						</div>
+					</div>
+					<div>
+						<div className='flex flex-row gap-7 items-center'>
+							<p className='text-2xl font-normal text-center w-14'>90%</p>
+							<p>responden menyelesaikan survei, mantap!</p>
+						</div>
+						<div className='flex flex-row gap-7 items-center'>
+							<p className='text-2xl font-normal text-center w-14'>02:12</p>
+							<p>waktu menyelesaikan survei</p>
+						</div>
+					</div>
 				</div>
 			</div>
 
