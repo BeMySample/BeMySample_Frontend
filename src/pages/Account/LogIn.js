@@ -7,39 +7,43 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet'
 import { motion } from 'framer-motion'
-import ProfilePict from '../../assets/images/profilepict.png'
 import axios from 'axios'
+import { initializeCsrf, login, fetchUser } from '../../api/auth'
+import toast, { Toaster } from 'react-hot-toast'
+import Cookies from 'js-cookie'
+import ReactLoading from 'react-loading'
 
 const Login = () => {
 	const navigate = useNavigate()
-	const [user, setUser] = useState(null)
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [showPassword, setShowPassword] = useState(false)
 	const [formSubmitted, setFormSubmitted] = useState(false)
+	const [isLoading, setIsLoading] = useState(true)
+	const [isRedirecting, setIsRedirecting] = useState(false)
 
-	// Mengecek apakah token ada di cookie
+	const isEmailValid = email.trim() !== ''
+	const isPasswordValid = password.trim() !== ''
+	const isFormValid = isEmailValid && isPasswordValid
+
 	useEffect(() => {
-		// Fungsi untuk cek apakah token ada di cookie dan valid
-		const checkAuthStatus = async () => {
+		const checkLoginStatus = async () => {
 			try {
-				const response = await axios.get('http://localhost:8000/api/user', {
-					withCredentials: true, // Kirim cookie
-				})
-
+				const response = await fetchUser()
 				if (response.data) {
-					// Jika token valid, redirect ke dashboard
-					navigate('/dashboard')
+					setIsRedirecting(true)
+					setTimeout(() => {
+						navigate('/dashboard/home')
+					}, 1500)
 				}
-			} catch (error) {
-				console.log('User not authenticated', error)
+			} catch (err) {
+				setIsLoading(false)
 			}
 		}
 
-		checkAuthStatus()
+		checkLoginStatus()
 	}, [navigate])
 
-	// Fungsi untuk login menggunakan Google
 	const handleGoogleLogin = async () => {
 		try {
 			window.location.href = 'http://localhost:8000/auth/google'
@@ -47,10 +51,6 @@ const Login = () => {
 			console.error('Google Login Error:', error)
 		}
 	}
-
-	const isEmailValid = email.trim() !== ''
-	const isPasswordValid = password.trim() !== ''
-	const isFormValid = isEmailValid && isPasswordValid
 
 	const handleSubmit = (e) => {
 		e.preventDefault()
@@ -61,35 +61,90 @@ const Login = () => {
 		}
 	}
 
-	// const handleEmailLogin = async () => {
-	// 	try {
-	// 		const response = await axios.post(
-	// 			'http://localhost:8000/api/login',
-	// 			{
-	// 				email,
-	// 				password,
-	// 			},
-	// 			{
-	// 				withCredentials: true,
-	// 			}
-	// 		)
+	const handleEmailLogin = async () => {
+		try {
+			await toast.promise(
+				(async () => {
+					await initializeCsrf()
+					const response = await login(email, password)
+					console.log('Login successful:', response.data)
 
-	// 		const { user } = response.data
+					const token = response.data.access_token
 
-	// 		const userData = {
-	// 			name: user.name || 'Guest User',
-	// 			avatar: user.avatar || ProfilePict,
-	// 		}
+					Cookies.set('auth_token', token, { expires: 7, secure: true })
 
-	// 		localStorage.setItem('user', JSON.stringify(userData))
-	// 		navigate('/dashboard')
-	// 	} catch (error) {
-	// 		console.error('Error logging in:', error.response?.data || error.message)
-	// 	}
-	// }
+					navigate('/dashboard/home')
+				})(),
+				{
+					loading: 'Sedang memproses login...',
+					success: 'Login berhasil!',
+					error: 'Login gagal. Periksa kembali informasi Anda.',
+				}
+			)
+		} catch (err) {
+			console.error('Login error:', err.response?.data || err.message)
+		}
+	}
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+		const token = params.get('token')
+		const isRegistered = params.get('isRegistered') === 'true'
+		const isAuth = params.get('isAuth') === 'true'
+		const userId = params.get('id')
+
+		if (token) {
+			Cookies.set('auth_token', token, { expires: 7, secure: true })
+
+			console.log('isRegistered:', isRegistered)
+			console.log('isAuth:', isAuth)
+			console.log('userId:', userId)
+
+			if (isAuth) {
+				if (isRegistered) {
+					navigate('/dashboard/home')
+				} else {
+					const encodedId = encodeURIComponent(userId)
+					navigate(`/register/${encodedId}/fill-data`)
+				}
+			} else {
+				navigate('/login?error=unauthorized')
+			}
+		} else {
+			console.error('No token found in URL')
+			navigate('/login')
+		}
+	}, [navigate])
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center min-h-screen bg-gray-100">
+				<ReactLoading
+					type="spinningBubbles"
+					color="#1F38DB"
+					height={80}
+					width={80}
+				/>
+			</div>
+		)
+	}
 
 	return (
 		<div className="min-h-screen flex items-center justify-center relative font-inter">
+			<Toaster position="top-center" reverseOrder={false} />
+
+			{/* Animasi overlay saat redirect */}
+			{isRedirecting && (
+				<div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50">
+					<ReactLoading
+						type="spinningBubbles"
+						color="#ffffff"
+						height={80}
+						width={80}
+					/>
+				</div>
+			)}
+
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
@@ -220,7 +275,7 @@ const Login = () => {
 					</div>
 
 					<motion.button
-						// onClick={handleEmailLogin}
+						onClick={handleEmailLogin}
 						whileHover={{ scale: isFormValid ? 1.05 : 1 }}
 						whileTap={{ scale: 0.95 }}
 						className={`w-full px-6 py-3 rounded-2xl text-white font-medium transition ${'bg-blue-500'} hover:bg-blue-600`}

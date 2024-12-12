@@ -10,6 +10,8 @@ import LikertScale from '../Templates/LikertScale'
 import Closing from '../Templates/Closing'
 
 const MainContent = ({
+	viewMode,
+	editMode,
 	sections,
 	activeSection,
 	contentText,
@@ -19,14 +21,34 @@ const MainContent = ({
 	buttonTextColor,
 	bgColor,
 	backgroundImage,
+	bgOpacity,
+	setTitle,
+	setDescription,
 	title,
 	description,
+	toggleResponseCopy,
+	mustBeFilled,
+	otherOption,
+	minChoices,
+	maxChoices,
+	optionsCount,
+	setOptionsCount,
+
+	smallLabel,
+	midLabel,
+	largeLabel,
 }) => {
 	const renderSectionContent = () => {
 		switch (contentText) {
 			case 'Selamat datang':
 				return (
 					<WelcomeContent
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						description={description}
+						setDescription={setDescription}
 						textColor={textColor}
 						buttonColor={buttonColor}
 						buttonText={buttonText}
@@ -34,30 +56,138 @@ const MainContent = ({
 					/>
 				)
 			case 'Teks Pendek':
-				return <ShortText />
+				return (
+					<ShortText
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						description={description}
+						setDescription={setDescription}
+						textColor={textColor}
+						buttonColor={buttonColor}
+						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
+						mustBeFilled={mustBeFilled}
+					/>
+				)
 			case 'Waktu':
-				return <Time />
+				return (
+					<Time
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						description={description}
+						setDescription={setDescription}
+						textColor={textColor}
+						buttonColor={buttonColor}
+						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
+						mustBeFilled={mustBeFilled}
+					/>
+				)
 			case 'Dropdown':
-				return <Dropdown />
+				return (
+					<Dropdown
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						description={description}
+						setDescription={setDescription}
+						textColor={textColor}
+						buttonColor={buttonColor}
+						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
+						mustBeFilled={mustBeFilled}
+					/>
+				)
 			case 'Pilihan Ganda':
-				return <MultipleChoice />
+				return (
+					<MultipleChoice
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						description={description}
+						setDescription={setDescription}
+						textColor={textColor}
+						buttonColor={buttonColor}
+						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
+						mustBeFilled={mustBeFilled}
+						otherOption={otherOption}
+						minChoices={minChoices}
+						maxChoices={maxChoices}
+						optionsCount={optionsCount}
+						setOptionsCount={setOptionsCount}
+					/>
+				)
 			case 'Quote':
-				return <Quote />
+				return (
+					<Quote
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						textColor={textColor}
+						buttonColor={buttonColor}
+						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
+					/>
+				)
 			case 'Teks Panjang':
-				return <LongText />
+				return (
+					<LongText
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						description={description}
+						setDescription={setDescription}
+						textColor={textColor}
+						buttonColor={buttonColor}
+						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
+						mustBeFilled={mustBeFilled}
+					/>
+				)
 			case 'Likert':
-				return <LikertScale />
+				return (
+					<LikertScale
+						viewMode={viewMode}
+						editMode={editMode}
+						title={title}
+						setTitle={setTitle}
+						description={description}
+						setDescription={setDescription}
+						textColor={textColor}
+						buttonColor={buttonColor}
+						buttonText={buttonText}
+						buttonTextColor={buttonTextColor}
+						mustBeFilled={mustBeFilled}
+						smallLabel={smallLabel}
+						midLabel={midLabel}
+						largeLabel={largeLabel}
+					/>
+				)
 			case 'Closing':
 				return (
 					<Closing
+						viewMode={viewMode}
+						editMode={editMode}
+						setTitle={setTitle}
+						setDescription={setDescription}
 						title={title}
 						description={description}
 						textColor={textColor}
 						buttonColor={buttonColor}
+						toggleResponseCopy={toggleResponseCopy}
 					/>
 				)
 			default:
-				return <p>Konten Default</p>
+				return <p>Silahkan pilih template yang ingin digunakan</p>
 		}
 	}
 
@@ -67,23 +197,56 @@ const MainContent = ({
 	const totalPages = sections.length
 
 	return (
-		<main
-			className="relative flex-grow p-8 flex flex-col justify-center items-center m-4 rounded-2xl"
-			style={{
-				backgroundColor: bgColor,
-				backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-				backgroundSize: 'cover',
-				backgroundPosition: 'center',
-				backgroundRepeat: 'no-repeat',
-			}}
-		>
-			{renderSectionContent()}
+		<>
+			{editMode ? (
+				<main
+					className={`relative flex-grow p-8 flex flex-col justify-center items-center m-4 rounded-2xl`}
+					style={{
+						backgroundColor: bgColor,
+						backgroundImage: backgroundImage
+							? `linear-gradient(rgba(255, 255, 255, ${
+									1 - bgOpacity
+							  }), rgba(255, 255, 255, ${
+									1 - bgOpacity
+							  })), url(${backgroundImage})`
+							: 'none',
+						backgroundSize: 'cover',
+						backgroundPosition: 'center',
+						backgroundRepeat: 'no-repeat',
+					}}
+				>
+					{renderSectionContent()}
 
-			{/* Tampilan progress Page x/y */}
-			<div className="absolute bottom-3 left-3 bg-zinc-800 text-white px-3 py-2 rounded-xl text-sm">
-				{currentPage}/{totalPages}
-			</div>
-		</main>
+					<div className="absolute bottom-3 left-3 bg-zinc-800 text-white px-3 py-2 rounded-xl text-sm">
+						{currentPage}/{totalPages}
+					</div>
+				</main>
+			) : (
+				<div className="flex-grow flex justify-center items-center bg-[#f5f5f5] m-4 rounded-2xl">
+					<div
+						className="p-8 rounded-3xl flex justify-center items-center border-4 border-zinc-300"
+						style={{
+							width: viewMode === 'mobile' ? '375px' : '100%',
+							maxWidth: '1440px',
+							height: '720px',
+							backgroundColor: bgColor,
+							backgroundImage: backgroundImage
+								? `url(${backgroundImage})`
+								: 'none',
+							backgroundSize: 'cover',
+							backgroundPosition: 'center',
+							backgroundRepeat: 'no-repeat',
+							transition: 'width 0.5s ease-in-out, height 0.5s ease-in-out',
+							// WebkitBoxShadow: '7px 11px 15px -4px rgba(138,138,138,1)',
+							// MozBoxShadow: '7px 11px 15px -4px rgba(138,138,138,1)',
+							// boxShadow: '7px 11px 15px -4px rgba(138,138,138,1)',
+						}}
+					>
+						{renderSectionContent()}
+					</div>
+				</div>
+			)}
+		</>
 	)
 }
 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast'
 import LeftSidebar from '../../../components/SurveyEdit/Edit/LeftSidebar'
 import MainContent from '../../../components/SurveyEdit/Edit/MainContent'
 import RightSidebar from '../../../components/SurveyEdit/Edit/RightSidebar'
+import RightSidebarPreview from '../../../components/SurveyEdit/Preview/RightSidebar'
 import NavBar from '../../../components/Navbar'
 import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
 import ProfilePict from '../../../assets/images/profilepict.png'
@@ -11,6 +12,9 @@ import { Icon } from '@iconify/react'
 import { Helmet } from 'react-helmet'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import ProfileMenu from '../../../components/ProfileMenu'
+import Publish from './Publish'
+import Results from './Results'
 
 const LOCAL_STORAGE_KEY = 'surveyData'
 
@@ -30,8 +34,31 @@ const getFormattedDate = () => {
 	return `${formattedDate} WIB`
 }
 
-const Edit = () => {
+const Edit = ({ onEdit }) => {
 	const { id } = useParams()
+	const [viewMode, setViewMode] = useState('desktop')
+
+	const toggleViewMode = (mode) => {
+		setViewMode(mode)
+	}
+
+	const location = useLocation()
+	const pathSegments = location.pathname.split('/')
+
+	const currentPath = pathSegments[pathSegments.length - 2]
+	const activeMenuFromPath =
+		{
+			edit: 'Sunting',
+			preview: 'Pratinjau',
+			publish: 'Terbitkan',
+			results: 'Hasil',
+		}[currentPath] || ''
+
+	const [activeMenu, setActiveMenu] = useState(activeMenuFromPath)
+
+	const handleMenuClick = (label) => {
+		setActiveMenu(label)
+	}
 
 	const [activeSection, setActiveSection] = useState('welcome')
 	const [sections, setSections] = useState([
@@ -51,6 +78,7 @@ const Edit = () => {
 	const [buttonText, setButtonText] = useState('Mulai')
 	const [backgroundImage, setBackgroundImage] = useState(null)
 	const [bgColor, setBgColor] = useState('#FFFFFF')
+	const [bgOpacity, setBgOpacity] = useState(100)
 	const [buttonColor, setButtonColor] = useState('#1F38DB')
 	const [buttonTextColor, setButtonTextColor] = useState('#FFFFFF')
 	const [textColor, setTextColor] = useState('#000000')
@@ -58,6 +86,19 @@ const Edit = () => {
 	const [description, setDescription] = useState(
 		'Anda sudah menyelesaikan survei ini'
 	)
+	const [toggleResponseCopy, setToggleResponseCopy] = useState(false)
+	const [mustBeFilled, setMustBeFilled] = useState(true)
+	const [otherOption, setOtherOption] = useState(false)
+	const [dateFormat, setDateFormat] = useState(null)
+	const [timeFormat, setTimeFormat] = useState(null)
+	const [minChoices, setMinChoices] = useState(1)
+	const [maxChoices, setMaxChoices] = useState(1)
+	const [optionsCount, setOptionsCount] = useState(3)
+
+	const [smallLabel, setSmallLabel] = useState(false)
+	const [midLabel, setMidLabel] = useState(false)
+	const [largeLabel, setLargeLabel] = useState(false)
+
 	const [isEditing, setIsEditing] = useState(null)
 	const [editedLabel, setEditedLabel] = useState('')
 	const [unsavedChanges, setUnsavedChanges] = useState(false)
@@ -77,7 +118,7 @@ const Edit = () => {
 					position: 'bottom-right',
 				})
 				setUnsavedChanges(false)
-			}, 1000)
+			}, 500)
 
 			return () => clearTimeout(autoSaveTimeout)
 		}
@@ -89,12 +130,24 @@ const Edit = () => {
 		buttonText,
 		backgroundImage,
 		bgColor,
+		bgOpacity,
 		buttonColor,
 		buttonTextColor,
 		textColor,
 		title,
 		description,
 		unsavedChanges,
+		toggleResponseCopy,
+		mustBeFilled,
+		otherOption,
+		optionsCount,
+		dateFormat,
+		timeFormat,
+		minChoices,
+		maxChoices,
+		smallLabel,
+		midLabel,
+		largeLabel,
 	])
 
 	useEffect(() => {
@@ -105,11 +158,9 @@ const Edit = () => {
 			setSections(surveyData.sections || sections)
 			setSurveyTitle(surveyData.surveyTitle || 'Survei Baru')
 
-			// Set the first section as active if there is no active section saved
 			const initialSection = surveyData.activeSection || sections[0].id
 			setActiveSection(initialSection)
 
-			// Load other data as usual
 			const sectionData = surveyData.data[initialSection] || {}
 			setSurveyStatus(surveyData.status || 'draft')
 			setRespondents(surveyData.respondents || 0)
@@ -118,6 +169,7 @@ const Edit = () => {
 			setButtonText(sectionData.buttonText || 'Mulai')
 			setBackgroundImage(surveyData.backgroundImage || null)
 			setBgColor(surveyData.bgColor || '#FFFFFF')
+			setBgOpacity(surveyData.bgOpacity || 1)
 			setButtonColor(sectionData.buttonColor || '#1F38DB')
 			setButtonTextColor(sectionData.buttonTextColor || '#FFFFFF')
 			setTextColor(sectionData.textColor || '#000000')
@@ -125,8 +177,19 @@ const Edit = () => {
 			setDescription(
 				sectionData.description || 'Anda sudah menyelesaikan survei ini.'
 			)
+			setToggleResponseCopy(sectionData.toggleResponseCopy || false)
+			setMustBeFilled(sectionData.mustBeFilled || false)
+			setOtherOption(sectionData.otherOption || false)
+			setDateFormat(sectionData.dateFormat || null)
+			setTimeFormat(sectionData.timeFormat || null)
+			setMinChoices(sectionData.minChoices || 1)
+			setMaxChoices(sectionData.maxChoices || 1)
+			setOptionsCount(sectionData.optionsCount || 3)
+
+			setSmallLabel(sectionData.smallLabel || false)
+			setMidLabel(sectionData.midLabel || false)
+			setLargeLabel(sectionData.largeLabel || false)
 		} else {
-			// Set the first section as active if no data is found
 			setActiveSection(sections[0].id)
 		}
 	}, [id])
@@ -135,7 +198,7 @@ const Edit = () => {
 		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
 
 		const surveyData = {
-			sections: updatedSections, // Gunakan sections yang diperbarui
+			sections: updatedSections,
 			surveyTitle,
 			data: {
 				...savedData[id]?.data,
@@ -143,15 +206,28 @@ const Edit = () => {
 					contentText,
 					buttonText,
 					bgColor,
+					bgOpacity,
 					buttonColor,
 					buttonTextColor,
 					textColor,
 					title,
 					description,
+					toggleResponseCopy,
+					mustBeFilled,
+					otherOption,
+					dateFormat,
+					timeFormat,
+					minChoices,
+					maxChoices,
+					optionsCount,
+					smallLabel,
+					midLabel,
+					largeLabel,
 				},
 			},
 			bgColor: bgColor,
 			backgroundImage: backgroundImage,
+			bgOpacity: bgOpacity,
 			status: surveyStatus,
 			respondents: respondents,
 			updated: getFormattedDate(),
@@ -221,11 +297,24 @@ const Edit = () => {
 		setButtonText(sectionData.buttonText || 'Mulai')
 		setBackgroundImage(surveyData.backgroundImage || null)
 		setBgColor(surveyData.bgColor || '#FFFFFF')
+		setBgOpacity(surveyData.bgOpacity || 1)
 		setButtonColor(sectionData.buttonColor || '#1F38DB')
 		setButtonTextColor(sectionData.buttonTextColor || '#FFFFFF')
 		setTextColor(sectionData.textColor || '#000000')
 		setTitle(sectionData.title || 'Isi Judul di sini')
 		setDescription(sectionData.description || 'Isi deskripsi di sini')
+		setToggleResponseCopy(sectionData.toggleResponseCopy || false)
+		setMustBeFilled(sectionData.mustBeFilled || false)
+		setOtherOption(sectionData.otherOption || false)
+		setDateFormat(sectionData.dateFormat || null)
+		setTimeFormat(sectionData.timeFormat || null)
+		setMinChoices(sectionData.minChoices || 1)
+		setMaxChoices(sectionData.maxChoices || 1)
+		setOptionsCount(sectionData.optionsCount || 3)
+
+		setSmallLabel(sectionData.smallLabel || false)
+		setMidLabel(sectionData.midLabel || false)
+		setLargeLabel(sectionData.largeLabel || false)
 	}
 
 	const updateIconForActiveSection = (newIcon) => {
@@ -235,12 +324,6 @@ const Edit = () => {
 			)
 		)
 		setUnsavedChanges(true)
-	}
-
-	const [activeMenu, setActiveMenu] = useState('Sunting')
-
-	const handleMenuClick = (menu) => {
-		setActiveMenu(menu)
 	}
 
 	const handleDelete = (id) => {
@@ -266,33 +349,6 @@ const Edit = () => {
 	}
 
 	const [user, setUser] = useState({ name: '', avatar: '' })
-	const navigate = useNavigate()
-
-	useEffect(() => {
-		const params = new URLSearchParams(window.location.search)
-		const name = params.get('name')
-		let avatar = params.get('avatar')
-		const token = params.get('token')
-
-		if (avatar && avatar.includes('=s96-c')) {
-			avatar = avatar.replace('=s96-c', '')
-		}
-
-		if (name && avatar && token) {
-			const userData = { name, avatar, token }
-			localStorage.setItem('user', JSON.stringify(userData))
-			setUser(userData)
-
-			window.history.replaceState({}, document.title, '/dashboard')
-		} else {
-			const savedUser = JSON.parse(localStorage.getItem('user'))
-			if (savedUser) {
-				setUser(savedUser)
-			} else {
-				navigate('/login')
-			}
-		}
-	}, [navigate])
 
 	return (
 		<DndProvider backend={HTML5Backend}>
@@ -301,8 +357,8 @@ const Edit = () => {
 					childrenLeft={
 						<Breadcrumbs
 							items={[
-								{ label: 'Surveiku', link: '/dashboard' },
-								{ label: surveyTitle, link: `/survey/edit/${id}` },
+								{ label: 'Survei Saya', link: '/dashboard/survey' },
+								{ label: surveyTitle, link: `/dashboard/survey/edit/${id}` },
 							]}
 							separator="mdi:chevron-right"
 							onTitleChange={handleTitleChange}
@@ -318,7 +374,7 @@ const Edit = () => {
 							].map(({ label, path }) => (
 								<Link
 									key={label}
-									to={`/survey/${path}/${id}`}
+									to={`/dashboard/survey/${path}/${id}`}
 									onClick={() => handleMenuClick(label)}
 									className={`relative font-normal focus:outline-none ${
 										activeMenu === label
@@ -334,84 +390,139 @@ const Edit = () => {
 							))}
 						</div>
 					}
-					childrenRight={
-						<div className="flex flex-row gap-2 items-center font-inter text-base">
-							<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
-								<Icon icon="akar-icons:coin" />
-								<p>200.000</p>
-							</div>
-							<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
-								<img
-									src={user?.avatar || ProfilePict}
-									alt="profile"
-									className="w-10 h-10 rounded-full"
-								/>
-							</div>
-						</div>
-					}
+					childrenRight={<ProfileMenu />}
 				/>
-				<Toaster position="top-right" />
-				<div className="min-h-20" />
-				<div className="flex flex-grow">
-					<LeftSidebar
-						sections={sections}
-						activeSection={activeSection}
-						setActiveSection={handleSectionChange}
-						addItem={addItem}
-						handleRename={handleRename}
-						isEditing={isEditing}
-						editedLabel={editedLabel}
-						handleRenameChange={handleRenameChange}
-						handleRenameSubmit={handleRenameSubmit}
-						handleDelete={handleDelete}
-						moveSection={moveSection}
-						setSections={setSections}
-						saveToLocalStorage={saveToLocalStorage} // Tambahkan prop ini
-					/>
+				<Toaster position="bottom-right" />
+				{location.pathname.includes('edit') && <div className="min-h-20" />}
+				{location.pathname.includes('preview') && <div className="min-h-20" />}
 
-					<MainContent
-						sections={sections}
-						activeSection={activeSection}
-						contentText={contentText}
-						textColor={textColor}
-						buttonText={buttonText}
-						buttonColor={buttonColor}
-						buttonTextColor={buttonTextColor}
-						bgColor={bgColor}
-						backgroundImage={backgroundImage}
-						title={title}
-						description={description}
-					/>
-					<RightSidebar
-						contentText={contentText}
-						setContentText={(value) => handleChange(setContentText, value)}
-						setSelectedIcon={(value) => {
-							setSelectedIcon(value)
-							updateIconForActiveSection(value)
-						}}
-						buttonText={buttonText}
-						setButtonText={(value) => handleChange(setButtonText, value)}
-						bgColor={bgColor}
-						setBgColor={(value) => handleChange(setBgColor, value)}
-						buttonColor={buttonColor}
-						setButtonColor={(value) => handleChange(setButtonColor, value)}
-						buttonTextColor={buttonTextColor}
-						setButtonTextColor={(value) =>
-							handleChange(setButtonTextColor, value)
-						}
-						textColor={textColor}
-						setTextColor={(value) => handleChange(setTextColor, value)}
-						backgroundImage={backgroundImage}
-						handleBackgroundChange={handleBackgroundChange}
-						handleBackgroundRemove={handleBackgroundRemove}
-						activeSection={activeSection}
-						title={title}
-						setTitle={(value) => handleChange(setTitle, value)}
-						description={description}
-						setDescription={(value) => handleChange(setDescription, value)}
-					/>
+				<div className="flex flex-grow">
+					{onEdit && location.pathname.includes('edit') && (
+						<LeftSidebar
+							sections={sections}
+							activeSection={activeSection}
+							setActiveSection={handleSectionChange}
+							addItem={addItem}
+							handleRename={handleRename}
+							isEditing={isEditing}
+							editedLabel={editedLabel}
+							handleRenameChange={handleRenameChange}
+							handleRenameSubmit={handleRenameSubmit}
+							handleDelete={handleDelete}
+							moveSection={moveSection}
+							setSections={setSections}
+							saveToLocalStorage={saveToLocalStorage}
+						/>
+					)}
+
+					{(location.pathname.includes('edit') ||
+						location.pathname.includes('preview')) && (
+						<MainContent
+							viewMode={viewMode}
+							editMode={onEdit}
+							sections={sections}
+							activeSection={activeSection}
+							contentText={contentText}
+							textColor={textColor}
+							buttonText={buttonText}
+							buttonColor={buttonColor}
+							buttonTextColor={buttonTextColor}
+							bgColor={bgColor}
+							backgroundImage={backgroundImage}
+							bgOpacity={bgOpacity}
+							title={title}
+							description={description}
+							setTitle={(value) => handleChange(setTitle, value)}
+							setDescription={(value) => handleChange(setDescription, value)}
+							toggleResponseCopy={toggleResponseCopy}
+							mustBeFilled={mustBeFilled}
+							otherOption={otherOption}
+							minChoices={minChoices}
+							maxChoices={maxChoices}
+							optionsCount={optionsCount}
+							smallLabel={smallLabel}
+							midLabel={midLabel}
+							largeLabel={largeLabel}
+						/>
+					)}
+					{onEdit &&
+						(location.pathname.includes('edit') ||
+							location.pathname.includes('preview')) && (
+							<RightSidebar
+								contentProps={{
+									contentText,
+									setContentText: (value) =>
+										handleChange(setContentText, value),
+									setSelectedIcon: (value) => {
+										setSelectedIcon(value)
+										updateIconForActiveSection(value)
+									},
+									buttonText,
+									setButtonText: (value) => handleChange(setButtonText, value),
+									title,
+									setTitle: (value) => handleChange(setTitle, value),
+									description,
+									setDescription: (value) =>
+										handleChange(setDescription, value),
+									toggleResponseCopy,
+									setToggleResponseCopy: (value) =>
+										handleChange(setToggleResponseCopy, value),
+									mustBeFilled,
+									setMustBeFilled: (value) =>
+										handleChange(setMustBeFilled, value),
+									otherOption,
+									setOtherOption: (value) =>
+										handleChange(setOtherOption, value),
+									minChoices,
+									setMinChoices: (value) => handleChange(setMinChoices, value),
+									maxChoices,
+									setMaxChoices: (value) => handleChange(setMaxChoices, value),
+									dateFormat,
+									setDateFormat: (value) => handleChange(setDateFormat, value),
+									timeFormat,
+									setTimeFormat: (value) => handleChange(setTimeFormat, value),
+									optionsCount,
+									setOptionsCount: (value) =>
+										handleChange(setOptionsCount, value),
+									smallLabel,
+									setSmallLabel: (value) => handleChange(setSmallLabel, value),
+									midLabel,
+									setMidLabel: (value) => handleChange(setMidLabel, value),
+									largeLabel,
+									setLargeLabel: (value) => handleChange(setLargeLabel, value),
+								}}
+								designProps={{
+									bgColor,
+									setBgColor: (value) => handleChange(setBgColor, value),
+									bgOpacity,
+									setBgOpacity: (value) => handleChange(setBgOpacity, value),
+									buttonColor,
+									setButtonColor: (value) =>
+										handleChange(setButtonColor, value),
+									buttonTextColor,
+									setButtonTextColor: (value) =>
+										handleChange(setButtonTextColor, value),
+									textColor,
+									setTextColor: (value) => handleChange(setTextColor, value),
+									backgroundImage,
+									handleBackgroundChange,
+									handleBackgroundRemove,
+								}}
+							/>
+						)}
+
+					{!onEdit && location.pathname.includes('preview') && (
+						<RightSidebarPreview
+							sections={sections}
+							activeSection={activeSection}
+							setActiveSection={handleSectionChange}
+							toggleViewMode={toggleViewMode}
+						/>
+					)}
 				</div>
 
+				{location.pathname.includes('publish') && <Publish />}
+				{location.pathname.includes('results') && <Results />}
 				<Helmet>
 					<title>{surveyTitle} - Sunting Survei | BeMySample</title>
 				</Helmet>

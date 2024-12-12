@@ -31,13 +31,31 @@ const SurveyCard = ({
 		}
 	}, [onToggleMenu])
 
+	const formatDate = (isoString) => {
+		// Ubah ISO string menjadi objek Date
+		const date = new Date(isoString)
+
+		// Format tanggal menjadi format yang mudah dibaca
+		const options = {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+			hour12: false, // Gunakan format 24 jam
+			timeZone: 'Asia/Jakarta', // Sesuaikan timezone jika perlu
+		}
+
+		return new Intl.DateTimeFormat('id-ID', options).format(date)
+	}
+
 	return (
 		<div className="relative flex flex-row items-center justify-between bg-gradient-to-r from-transparent to-[#F5F5F5] rounded-r-[16px] pr-[16px] w-full md:w-auto font-inter">
 			<div className="flex flex-row items-center">
 				<div className="flex flex-row">
 					<p
 						className={`px-2 py-1.5 rounded-l-xl text-center flex items-center justify-center gap-2 font-inter z-10 text-white text-xs ${
-							status === 'open'
+							status === 'active'
 								? 'bg-[#1F38DB]'
 								: status === 'closed'
 								? 'bg-[#EB221E]'
@@ -45,7 +63,7 @@ const SurveyCard = ({
 						}`}
 					>
 						<p style={{ writingMode: 'vertical-lr', rotate: '180deg' }}>
-							{status === 'open' && 'Dibuka'}
+							{status === 'active' && 'Dibuka'}
 							{status === 'closed' && 'Terhenti'}
 							{status === 'draft' && 'Draft'}
 						</p>
@@ -79,7 +97,7 @@ const SurveyCard = ({
 								icon="mdi:clock"
 								className="text-[13.33px] text-[#595959]"
 							/>
-							<p className="text-[12px]">{updated}</p>
+							<p className="text-[12px]">{formatDate(updated)}</p>
 						</div>
 					</div>
 				</div>
@@ -100,7 +118,7 @@ const SurveyCard = ({
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -10 }}
 							transition={{ duration: 0.2 }}
-							className="absolute -top-10 left-10 mt-2 w-28 bg-white shadow-md rounded-md p-2 z-20"
+							className="absolute -top-10 right-12 mt-2 w-28 bg-white shadow-md rounded-md p-2 z-20"
 						>
 							<div
 								onClick={onEdit}

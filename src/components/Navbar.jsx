@@ -2,8 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaBars, FaTimes } from 'react-icons/fa'
 
-const NavBar = ({ childrenLeft, childrenCenter, childrenRight, toggleMenu, menuOpen }) => {
+const NavBar = ({
+	childrenLeft,
+	childrenCenter,
+	childrenRight,
+	toggleMenu,
+	menuOpen,
+	position,
+}) => {
 	const storedLanguage = localStorage.getItem('langBMS') || 'id'
+	const navPosition = position || 'justify-center';
 	const [language, setLanguage] = useState(storedLanguage)
 	const [scrolled, setScrolled] = useState(false)
 
@@ -41,7 +49,7 @@ const NavBar = ({ childrenLeft, childrenCenter, childrenRight, toggleMenu, menuO
 			<div className="ml-5 flex items-center">{childrenLeft}</div>
 
 			{/* Center Section - Desktop Only */}
-			<div className="hidden lg:flex items-center justify-center flex-grow">
+			<div className={`hidden lg:flex items-center ${navPosition} flex-grow`}>
 				{childrenCenter}
 			</div>
 

@@ -9,13 +9,14 @@ const Users = () => {
 		const fetchUserData = async () => {
 			try {
 				const response = await axios.get('http://localhost:8000/api/user', {
-					withCredentials: true, // Pastikan mengirim cookie
+					withCredentials: true,
 				})
-
-				setUser(response.data) // Set data user
-				console.log('User data:', response.data)
+				console.log('User data:', response.data) // Menampilkan data user
 			} catch (error) {
-				console.error('Error fetching user data:', error)
+				console.error(
+					'Error fetching user data:',
+					error.response?.data || error.message
+				)
 			}
 		}
 

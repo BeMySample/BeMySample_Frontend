@@ -14,7 +14,7 @@ const ContributionCard = ({ title, updated, coins, image }) => {
 				alt=""
 				className="h-[98px] w-full object-cover rounded-t-2xl"
 			/>
-			<div className="px-6 py-4 flex flex-col items-start justify-start w-full">
+			<div className="px-6 py-4 flex flex-col items-start justify-start w-full gap-1.5">
 				<p className="font-bold font-inter text-[16px]">{title}</p>
 				<div className="flex flex-row gap-[16px]">
 					<div className="flex flex-row items-center gap-2 font-inter">

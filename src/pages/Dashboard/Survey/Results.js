@@ -107,31 +107,31 @@ const Results = () => {
 	const [user, setUser] = useState({ name: '', avatar: '' })
 	const navigate = useNavigate()
 
-	useEffect(() => {
-		const params = new URLSearchParams(window.location.search)
-		const name = params.get('name')
-		let avatar = params.get('avatar')
-		const token = params.get('token')
+	// useEffect(() => {
+	// 	const params = new URLSearchParams(window.location.search)
+	// 	const name = params.get('name')
+	// 	let avatar = params.get('avatar')
+	// 	const token = params.get('token')
 
-		if (avatar && avatar.includes('=s96-c')) {
-			avatar = avatar.replace('=s96-c', '')
-		}
+	// 	if (avatar && avatar.includes('=s96-c')) {
+	// 		avatar = avatar.replace('=s96-c', '')
+	// 	}
 
-		if (name && avatar && token) {
-			const userData = { name, avatar, token }
-			localStorage.setItem('user', JSON.stringify(userData))
-			setUser(userData)
+	// 	if (name && avatar && token) {
+	// 		const userData = { name, avatar, token }
+	// 		localStorage.setItem('user', JSON.stringify(userData))
+	// 		setUser(userData)
 
-			window.history.replaceState({}, document.title, '/dashboard')
-		} else {
-			const savedUser = JSON.parse(localStorage.getItem('user'))
-			if (savedUser) {
-				setUser(savedUser)
-			} else {
-				navigate('/login')
-			}
-		}
-	}, [navigate])
+	// 		window.history.replaceState({}, document.title, '/dashboard')
+	// 	} else {
+	// 		const savedUser = JSON.parse(localStorage.getItem('user'))
+	// 		if (savedUser) {
+	// 			setUser(savedUser)
+	// 		} else {
+	// 			navigate('/login')
+	// 		}
+	// 	}
+	// }, [navigate])
 
 	const data = [
 		{
@@ -163,59 +163,6 @@ const Results = () => {
 
 	return (
 		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
-			<NavBar
-				childrenLeft={
-					<Breadcrumbs
-						items={[
-							{ label: 'Surveiku', link: '/dashboard' },
-							{ label: surveyTitle, link: `/survey/edit/${id}` },
-						]}
-						separator="mdi:chevron-right"
-						onTitleChange={handleTitleChange}
-					/>
-				}
-				childrenCenter={
-					<div className="absolute inset-0 top-0 left-0 right-0 w-full -z-10 flex-grow flex items-center justify-center space-x-8 text-base">
-						{[
-							{ label: 'Sunting', path: 'edit' },
-							{ label: 'Pratinjau', path: 'preview' },
-							{ label: 'Terbitkan', path: 'publish' },
-							{ label: 'Hasil', path: 'results' },
-						].map(({ label, path }) => (
-							<Link
-								key={label}
-								to={`/survey/${path}/${id}`}
-								onClick={() => handleMenuClick(label)}
-								className={`relative font-normal focus:outline-none ${
-									activeMenu === label
-										? 'text-blue-600 font-semibold'
-										: 'text-gray-600'
-								}`}
-							>
-								{label}
-								{activeMenu === label && (
-									<span className="absolute -top-8 left-0 right-0 h-[12px] bg-gradient-to-r from-[#1F38DB] to-[#30ADD7] rounded-b-md"></span>
-								)}
-							</Link>
-						))}
-					</div>
-				}
-				childrenRight={
-					<div className="flex flex-row gap-2 items-center font-inter text-base">
-						<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
-							<Icon icon="akar-icons:coin" />
-							<p>200.000</p>
-						</div>
-						<div className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex flex-row gap-2 items-center justify-center text-base h-full">
-							<img
-								src={user?.avatar || ProfilePict}
-								alt="profile"
-								className="w-10 h-10 rounded-full"
-							/>
-						</div>
-					</div>
-				}
-			/>
 			<Toaster position="top-right" />
 			<div className="min-h-20" />
 
@@ -250,7 +197,7 @@ const Results = () => {
 					</div>
 				</div>
 
-				<div className="p-3 rounded-xl bg-white flex flex-col items-start gap-3 w-full">
+				<div className="p-3 relative rounded-xl bg-white flex flex-col items-start gap-3 w-full">
 					<ProgressBar
 						completed={90}
 						bgColor="#2073DB"
@@ -290,13 +237,26 @@ const Results = () => {
 						</div>
 					</div>
 					<div>
-						<div className='flex flex-row gap-7 items-center'>
-							<p className='text-2xl font-normal text-center w-14'>90%</p>
+						<div className="flex flex-row gap-7 items-center">
+							<p className="text-2xl font-normal text-center w-14">90%</p>
 							<p>responden menyelesaikan survei, mantap!</p>
 						</div>
-						<div className='flex flex-row gap-7 items-center'>
-							<p className='text-2xl font-normal text-center w-14'>02:12</p>
+						<div className="flex flex-row gap-7 items-center">
+							<p className="text-2xl font-normal text-center w-14">02:12</p>
 							<p>waktu menyelesaikan survei</p>
+						</div>
+					</div>
+					<img
+						className="w-auto h-[109px] left-[9px] bottom-0 absolute"
+						src={penguinFooterPublish}
+					/>
+					<div className="w-[285px] h-[66px] left-[90px] bottom-20 absolute bg-[#d3d3d3] rounded-lg">
+						<img
+							className="w-[17.88px] h-[18.77px] left-[-1.55px] bottom-0 absolute"
+							src="https://via.placeholder.com/18x19"
+						/>
+						<div className="w-4 h-4 pl-[1.40px] pr-[1.33px] pt-[1.33px] pb-[0.12px] left-[260px] top-[45px] absolute justify-center items-center inline-flex">
+							<div className="w-[13.27px] relative"></div>
 						</div>
 					</div>
 				</div>

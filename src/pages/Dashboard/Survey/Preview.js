@@ -123,33 +123,6 @@ const Preview = () => {
 	}
 
 	const [user, setUser] = useState({ name: '', avatar: '' })
-	const navigate = useNavigate()
-
-	useEffect(() => {
-		const params = new URLSearchParams(window.location.search)
-		const name = params.get('name')
-		let avatar = params.get('avatar')
-		const token = params.get('token')
-
-		if (avatar && avatar.includes('=s96-c')) {
-			avatar = avatar.replace('=s96-c', '')
-		}
-
-		if (name && avatar && token) {
-			const userData = { name, avatar, token }
-			localStorage.setItem('user', JSON.stringify(userData))
-			setUser(userData)
-
-			window.history.replaceState({}, document.title, '/dashboard')
-		} else {
-			const savedUser = JSON.parse(localStorage.getItem('user'))
-			if (savedUser) {
-				setUser(savedUser)
-			} else {
-				navigate('/login')
-			}
-		}
-	}, [navigate])
 
 	return (
 		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
@@ -157,8 +130,8 @@ const Preview = () => {
 				childrenLeft={
 					<Breadcrumbs
 						items={[
-							{ label: 'Surveiku', link: '/dashboard' },
-							{ label: surveyTitle, link: `/survey/edit/${id}` },
+							{ label: 'Survei Saya', link: '/dashboard/survey' },
+							{ label: surveyTitle, link: `/dashboard/survey/edit/${id}` },
 						]}
 						separator="mdi:chevron-right"
 						onTitleChange={handleTitleChange}
@@ -174,7 +147,7 @@ const Preview = () => {
 						].map(({ label, path }) => (
 							<Link
 								key={label}
-								to={`/survey/${path}/${id}`}
+								to={`/dashboard/survey/${path}/${id}`}
 								onClick={() => handleMenuClick(label)}
 								className={`relative font-normal focus:outline-none ${
 									activeMenu === label

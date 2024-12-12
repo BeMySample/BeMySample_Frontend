@@ -87,7 +87,7 @@ const RightSidebar = ({
 				<button
 					className="w-full py-2 border border-blue-600 text-blue-600 rounded-lg flex items-center justify-center gap-2"
 					onClick={() =>
-						(window.location.pathname = `/survey/edit/${id}`)
+						(window.location.pathname = `/dashboard/survey/edit/${id}`)
 					}
 				>
 					<Icon icon="material-symbols:edit-outline" />

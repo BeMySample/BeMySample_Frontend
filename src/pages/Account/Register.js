@@ -3,12 +3,16 @@ import bgPage from '../../assets/images/bgLogin.png'
 import logoBeMySample from '../../assets/images/BeMySampleLogo_Transparent.png'
 import { FcGoogle } from 'react-icons/fc'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom' // Import useNavigate
 import { Helmet } from 'react-helmet'
 import { motion } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
+import { initializeCsrf, login } from '../../api/auth'
+import Cookies from 'js-cookie'
 
 const Register = () => {
+	const navigate = useNavigate() // Inisialisasi navigate
+
 	const [formData, setFormData] = useState({
 		nama: '',
 		email: '',
@@ -17,41 +21,45 @@ const Register = () => {
 	})
 
 	const [showPassword, setShowPassword] = useState(false)
-	const [formSubmitted, setFormSubmitted] = useState(false)
 	const [errorMessage, setErrorMessage] = useState(null)
+	const [isPasswordFocused, setIsPasswordFocused] = useState(false)
+	const [isConfirmTouched, setIsConfirmTouched] = useState(false)
 
 	const handleChange = (e) => {
-		setFormData({
-			...formData,
-			[e.target.name]: e.target.value,
-		})
+		const { name, value } = e.target
+		setFormData({ ...formData, [name]: value })
 	}
 
-	const validatePassword = (password) => {
-		const minLength = password.length >= 8
-		const hasUppercase = /[A-Z]/.test(password)
-		const hasLowercase = /[a-z]/.test(password)
-		const hasNumber = /[0-9]/.test(password)
-		const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
-
-		return { minLength, hasUppercase, hasLowercase, hasNumber, hasSpecialChar }
+	const calculatePasswordStrength = (password) => {
+		const criteria = [
+			password.length >= 8,
+			/[A-Z]/.test(password),
+			/[a-z]/.test(password),
+			/[0-9]/.test(password),
+			/[!@#$%^&*(),.?":{}|<>]/.test(password),
+		]
+		const strength = criteria.filter(Boolean).length
+		return strength
 	}
 
-	const passwordCriteria = validatePassword(formData.password)
-	const isPasswordValid =
-		passwordCriteria.minLength &&
-		passwordCriteria.hasUppercase &&
-		passwordCriteria.hasLowercase &&
-		passwordCriteria.hasNumber &&
-		passwordCriteria.hasSpecialChar
+	const passwordStrength = calculatePasswordStrength(formData.password)
+
+	const getStrengthLabel = (strength) => {
+		if (strength <= 2) return { label: 'Weak', color: 'bg-red-500' }
+		if (strength === 3 || strength === 4)
+			return { label: 'Moderate', color: 'bg-yellow-500' }
+		if (strength === 5) return { label: 'Strong', color: 'bg-green-500' }
+		return { label: '', color: 'bg-gray-300' }
+	}
+
+	const strengthLabel = getStrengthLabel(passwordStrength)
+
 	const isPasswordMatch = formData.password === formData.confirmPassword
-
 	const isFormValid =
-		formData.nama && formData.email && isPasswordValid && isPasswordMatch
+		formData.nama && formData.email && passwordStrength >= 3 && isPasswordMatch
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		setFormSubmitted(true)
 
 		if (!isFormValid) {
 			setErrorMessage('Harap isi semua kolom dengan benar.')
@@ -66,25 +74,23 @@ const Register = () => {
 				},
 				body: JSON.stringify({
 					username: formData.nama.replace(/\s+/g, '').toLowerCase(),
+					status: '0',
 					nama_lengkap: formData.nama,
 					email: formData.email,
 					password: formData.password,
-					google_id: 'n238dhwidjmw',
-					avatar: 'default-avatar',
+					google_id: 'unknown',
+					avatar: '',
 					tanggal_lahir: '',
 					jenis_kelamin: 'laki-laki',
 					umur: 25,
-					lokasi: 'Indonesia',
-					minat: 'Teknologi',
-					institusi: 'Default Institution',
+					lokasi: '',
+					minat: '',
+					institusi: '',
 					poin_saya: 0,
-					pekerjaan: 'Mahasiswa',
-					profilepic: 'default-profile-pic-url',
+					pekerjaan: '',
+					profilepic: '',
 				}),
 			})
-
-			console.log('Status Code:', response.status)
-			console.log('Headers:', response.headers)
 
 			if (!response.ok) {
 				const errorData = await response.json()
@@ -93,10 +99,20 @@ const Register = () => {
 			}
 
 			const data = await response.json()
-			// alert('Registrasi berhasil: ' + JSON.stringify(data))
+			const userId = data.id
+
+			// Encode ID menggunakan Base64
+			const encodedId = btoa(userId.toString())
 			toast.success('Registrasi berhasil!')
-			window.location.href = '/login'
-			setErrorMessage(null)
+
+			await initializeCsrf()
+			const responseLogin = await login(formData.email, formData.password)
+			const token = responseLogin.data.access_token
+
+			Cookies.set('auth_token', token, { expires: 7, secure: true })
+
+			// Redirect ke halaman VerifyAccount dengan encoded ID di URL
+			navigate(`/register/${encodedId}/verify-account`)
 		} catch (error) {
 			toast.error('Registrasi gagal!')
 			setErrorMessage(error.toString())
@@ -150,26 +166,6 @@ const Register = () => {
 						</div>
 					</motion.div>
 
-					<motion.button
-						type="button"
-						whileHover={{ scale: 1.05 }}
-						whileTap={{ scale: 0.95 }}
-						className="flex items-center justify-center gap-4 px-6 py-3 w-full rounded-full border-2 border-gray-300"
-					>
-						<FcGoogle className="text-lg md:text-xl" />
-						<span className="font-inter text-sm sm:text-base md:text-lg">
-							Daftar dengan Google
-						</span>
-					</motion.button>
-
-					<div className="flex items-center gap-4 w-full">
-						<div className="flex-grow h-px bg-gray-300"></div>
-						<p className="text-xs sm:text-sm md:text-base text-gray-500">
-							ATAU
-						</p>
-						<div className="flex-grow h-px bg-gray-300"></div>
-					</div>
-
 					<div className="flex flex-col gap-4 w-full">
 						<input
 							type="text"
@@ -194,6 +190,8 @@ const Register = () => {
 								placeholder="Password"
 								value={formData.password}
 								onChange={handleChange}
+								onFocus={() => setIsPasswordFocused(true)}
+								onBlur={() => setIsPasswordFocused(false)}
 								className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500"
 							/>
 							<button
@@ -204,63 +202,44 @@ const Register = () => {
 								{showPassword ? <FaEyeSlash /> : <FaEye />}
 							</button>
 						</div>
-						<input
-							type="password"
-							name="confirmPassword"
-							placeholder="Konfirmasi Password"
-							value={formData.confirmPassword}
-							onChange={handleChange}
-							className="w-full h-10 sm:h-12 md:h-14 border border-gray-400 rounded-md px-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
-						/>
 
-						<div className="text-sm">
-							<ul>
-								<li
-									className={`${
-										passwordCriteria.minLength
-											? 'text-green-500'
-											: 'text-gray-500'
-									}`}
-								>
-									✔ Minimal 8 karakter
-								</li>
-								<li
-									className={`${
-										passwordCriteria.hasUppercase
-											? 'text-green-500'
-											: 'text-gray-500'
-									}`}
-								>
-									✔ Huruf besar
-								</li>
-								<li
-									className={`${
-										passwordCriteria.hasLowercase
-											? 'text-green-500'
-											: 'text-gray-500'
-									}`}
-								>
-									✔ Huruf kecil
-								</li>
-								<li
-									className={`${
-										passwordCriteria.hasNumber
-											? 'text-green-500'
-											: 'text-gray-500'
-									}`}
-								>
-									✔ Angka
-								</li>
-								<li
-									className={`${
-										passwordCriteria.hasSpecialChar
-											? 'text-green-500'
-											: 'text-gray-500'
-									}`}
-								>
-									✔ Karakter khusus
-								</li>
-							</ul>
+						{/* Bar Progress */}
+						{isPasswordFocused && (
+							<div className="w-full h-2 rounded-full bg-gray-300 mt-2">
+								<div
+									className={`h-2 rounded-full ${strengthLabel.color}`}
+									style={{ width: `${(passwordStrength / 5) * 100}%` }}
+								></div>
+							</div>
+						)}
+						{isPasswordFocused && (
+							<p className="text-sm text-gray-600">{strengthLabel.label}</p>
+						)}
+
+						{/* Confirm Password */}
+						<div className="relative">
+							<input
+								type="password"
+								name="confirmPassword"
+								placeholder="Konfirmasi Password"
+								value={formData.confirmPassword}
+								onChange={handleChange}
+								onFocus={() => setIsConfirmTouched(true)}
+								className={`w-full h-10 sm:h-12 md:h-14 border ${
+									!isConfirmTouched || isPasswordMatch
+										? 'border-gray-400'
+										: 'border-red-500'
+								} rounded-md px-4 focus:outline-none focus:ring-1 ${
+									!isConfirmTouched || isPasswordMatch
+										? 'focus:ring-blue-500'
+										: 'focus:ring-red-500'
+								}`}
+							/>
+							{isConfirmTouched && !isPasswordMatch && (
+								<p className="text-sm text-red-500 mt-1">
+									Password tidak cocok.
+								</p>
+							)}
 						</div>
 					</div>
 

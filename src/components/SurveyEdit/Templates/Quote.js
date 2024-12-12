@@ -1,38 +1,87 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Icon } from '@iconify/react'
 
-const Quote = ({ viewMode }) => {
+const Quote = ({
+	viewMode,
+	title,
+	setTitle,
+	description,
+	setDescription,
+	buttonText,
+	buttonColor,
+	buttonTextColor,
+	textColor,
+}) => {
+	const [isEditingTitle, setIsEditingTitle] = useState(false)
+
+	const handleTitleDoubleClick = () => {
+		setIsEditingTitle(true)
+	}
+
+	const handleTitleBlur = (e) => {
+		setIsEditingTitle(false)
+		setTitle(e.target.value)
+	}
+
+	const handleTitleKeyPress = (e) => {
+		if (e.key === 'Enter') {
+			setIsEditingTitle(false)
+			setTitle(e.target.value)
+		}
+	}
+
 	return (
 		<div
-			className={`flex flex-col justify-center items-center text-gray-700 font-inter relative bg-cover bg-center rounded-lg ${
+			className={`flex flex-col justify-center items-start text-gray-700 font-inter relative bg-cover bg-center rounded-lg ${
 				viewMode === 'mobile' ? 'w-[375px] h-[720px] p-4' : 'w-full h-full p-6'
 			}`}
-			style={{
-				backgroundImage: 'url("/path/to/your/background-image.jpg")',
-				backgroundColor: 'rgba(255, 255, 255, 0.7)',
-				backgroundBlendMode: 'overlay',
-			}}
 		>
-			<div className="flex flex-col items-center w-full max-w-[90%] text-center">
+			<div className="flex flex-col items-start w-full max-w-[90%] text-center">
 				{/* Quote Text */}
 				<Icon
 					icon="mdi:format-quote-open"
 					className="text-4xl text-gray-600 inline-block mb-2"
 				/>
-				<h1 className="text-2xl font-bold text-black mb-4">
-					Selanjutnya, Anda akan menceritakan pengalaman Anda!
-				</h1>
+				{isEditingTitle ? (
+					<input
+						type="text"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+						onBlur={handleTitleBlur}
+						onKeyPress={handleTitleKeyPress}
+						autoFocus
+						className={`font-base mb-2 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 ${
+							viewMode === 'mobile' ? 'text-[24px]' : 'text-[32px]'
+						}`}
+						style={{ color: textColor }}
+					/>
+				) : (
+					<h1
+						className={`mb-2 ${
+							viewMode === 'mobile' ? 'text-[24px]' : 'text-[32px]'
+						}`}
+						style={{ color: textColor }}
+						onDoubleClick={handleTitleDoubleClick}
+					>
+						{title || 'Isi kutipan di sini'}
+					</h1>
+				)}
 
 				{/* Next Button */}
 				<button
-					className="w-full py-2 bg-red-600 text-white text-lg font-semibold rounded-lg flex justify-center items-center"
-					onClick={() => alert('Lanjut ke bagian berikutnya')}
+					className={`py-2 px-4 rounded-lg ${
+						viewMode === 'mobile' ? 'text-base' : 'text-lg'
+					}`}
+					style={{ backgroundColor: buttonColor, color: buttonTextColor }}
 				>
-					Lanjut
+					<p
+						className={`font-semibold ${
+							viewMode === 'mobile' ? 'text-[16px]' : 'text-[18px]'
+						}`}
+					>
+						{buttonText}
+					</p>
 				</button>
-				<p className="text-sm text-gray-500 mt-2 text-center">
-					atau tekan Enter ↵
-				</p>
 			</div>
 		</div>
 	)
