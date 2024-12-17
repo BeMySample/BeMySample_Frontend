@@ -1,4 +1,11 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import {
+	BrowserRouter as Router,
+	Route,
+	Routes,
+	Navigate,
+	useNavigate,
+	useLocation,
+} from 'react-router-dom'
 import './App.css'
 import LandingPage from './pages/LandingPage'
 import Page404 from './pages/Page404'
@@ -7,12 +14,9 @@ import Dashboard from './pages/Dashboard/Dashboard'
 
 import React, { useEffect, useState } from 'react'
 import Edit from './pages/Dashboard/Survey/SurveyEditor'
-import Preview from './pages/Dashboard/Survey/Preview'
 import Register from './pages/Account/Register'
-import Publish from './pages/Dashboard/Survey/Publish'
 import Users from './pages/Users'
 import { Toaster } from 'react-hot-toast'
-import Results from './pages/Dashboard/Survey/Results'
 import VerifyAccount from './pages/Account/VerifyAccount'
 import FillData from './pages/Account/FillData'
 import Contribution from './pages/Dashboard/Contribution'
@@ -24,6 +28,9 @@ import Home from './pages/Dashboard/Home'
 import QRCode from './pages/QRMFA'
 import Survey from './pages/Dashboard/MySurvey'
 import FileUpload from './pages/TestingUploadImage'
+import ForgotPasswordForm from './pages/Account/ForgotPassword'
+import ResetPassword from './pages/Account/ResetPassword'
+import { fetchUser } from './api/auth'
 
 const App = () => {
 	return (
@@ -34,13 +41,52 @@ const App = () => {
 }
 
 const Content = () => {
+	const [user, setUser] = useState(null)
+	const [isLoading, setIsLoading] = useState(true)
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		const getUser = async () => {
+			try {
+				const response = await fetchUser()
+				const userData = response.data.data
+				setUser(userData)
+
+				// Cek status autentikasi
+				if (userData.status) {
+					const [authType, isVerified] = userData.status
+						.split(',')
+						.map((val) => val.trim())
+
+					// Jika belum terverifikasi (isVerified === "false")
+					if (isVerified === 'false') {
+						const encodedId = btoa(userData.id.toString())
+						navigate(`/login/${encodedId}/verify-account?auth=${authType}`)
+					}
+				}
+			} catch (err) {
+				console.error('Error fetching user:', err.response?.data || err.message)
+			} finally {
+				setIsLoading(false)
+			}
+		}
+
+		getUser()
+	}, [navigate])
+
 	return (
 		<div>
 			<Toaster />
 
 			<Routes>
 				<Route path="/" element={<LandingPage />} />
+				<Route path="/forgot-password" element={<ForgotPasswordForm />} />
+				<Route path="/reset-password" element={<ResetPassword />} />
 				<Route path="/login" element={<LogIn />} />
+				<Route
+					path="/login/:encodedId/verify-account"
+					element={<VerifyAccount />}
+				/>
 				<Route path="/register" element={<Register />} />
 				<Route
 					path="/register/:encodedId/verify-account"
@@ -49,6 +95,7 @@ const Content = () => {
 				<Route path="/register/:encodedId/fill-data" element={<FillData />} />
 
 				<Route path="/dashboard" element={<Dashboard />}>
+					<Route index element={<Navigate to="home" />} />
 					<Route path="home" element={<Home />} />
 					<Route path="survey" element={<Survey />} />
 					<Route path="contribution" element={<Contribution />} />

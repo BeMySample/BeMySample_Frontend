@@ -4,8 +4,11 @@ import { motion } from 'framer-motion'
 import EditFieldPopup from '../../components/Popup/EditField'
 import DefaultProfile from '../../assets/images/default-profile.png'
 import { Helmet } from 'react-helmet'
+import axios from 'axios'
+import toast from 'react-hot-toast'
+import Loading from 'react-loading'
 
-const About = ({ profileData }) => {
+const About = ({ profileData, isLoading }) => {
 	const [isPopupOpen, setPopupOpen] = useState(false)
 	const [fieldToEdit, setFieldToEdit] = useState('')
 	const [fieldValue, setFieldValue] = useState('')
@@ -77,9 +80,74 @@ const About = ({ profileData }) => {
 		setPopupOpen(false)
 	}
 
+	const changeAvatar = async (e) => {
+		// Ambil file dari input
+		const file = e.target.files[0]
+		if (!file) {
+			toast.error('No file selected')
+			return
+		}
+
+		// Toast promise untuk proses upload
+		toast.promise(
+			(async () => {
+				try {
+					// Fetch user data terlebih dahulu
+					const userResponse = await axios.get(
+						`http://localhost:8000/api/users/${profileData.id}`
+					)
+					const userData = userResponse.data
+
+					// Buat FormData baru dan append semua data user
+					const formData = new FormData()
+					Object.entries(userData).forEach(([key, value]) => {
+						// Skip appending avatar lama
+						if (key !== 'avatar') {
+							formData.append(key, value)
+						}
+					})
+					formData.append('avatar', file)
+
+					// Kirim data dengan avatar baru
+					const response = await axios.post(
+						`http://localhost:8000/api/users/edit/${profileData.id}`,
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+							},
+						}
+					)
+
+					// Update avatar lokal (opsional, jika reload langsung tidak perlu ini)
+					profileData.avatar = response.data.avatar
+
+					// Refresh halaman
+					window.location.reload()
+				} catch (error) {
+					console.error('Error response:', error.response)
+					throw error // Biarkan toast.promise menangkap error
+				}
+			})(),
+			{
+				loading: 'Mengunggah gambar...',
+				success: 'Gambar profil berhasil diperbarui!',
+				error: 'Gagal untuk perbarui gambar profil. Coba lagi nanti.',
+			}
+		)
+	}
+
 	return (
 		<div className="flex-grow p-8">
 			{/* Profile Header */}
+			{isLoading && (
+				<div className="absolute left-0 bottom-0 right-0 flex flex-col justify-center items-center w-full bg-white bg-opacity-90 backdrop-blur-md z-20 h-screen">
+					<Loading type="spin" color="#1F38DB" height={50} width={50} />
+					<p className="mt-4 text-gray-700 font-semibold">
+						Memuat data survei...
+					</p>
+				</div>
+			)}
 			<div className="flex flex-col items-center gap-4 mb-8">
 				<div className="relative">
 					<img
@@ -89,11 +157,20 @@ const About = ({ profileData }) => {
 					/>
 					<motion.button
 						whileHover={{ scale: 1.1 }}
+						onClick={() => document.getElementById('avatar-upload').click()} // Trigger file input
 						className="absolute bottom-0 right-0 bg-white border border-gray-300 p-2 rounded-full shadow"
 					>
 						<Icon icon="ic:baseline-edit" className="text-gray-500" />
 					</motion.button>
+					<input
+						type="file"
+						id="avatar-upload"
+						accept="image/*"
+						style={{ display: 'none' }} // Hide input file
+						onChange={changeAvatar} // Trigger changeAvatar function on file select
+					/>
 				</div>
+
 				<div className="flex flex-col items-center">
 					<div className="flex items-center gap-2">
 						<p className="text-lg font-bold">{profileData.nama_lengkap}</p>

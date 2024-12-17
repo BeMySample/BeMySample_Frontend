@@ -62,11 +62,11 @@ const TwoFactorAuthPopup = ({ email, status, onClose, openGoogleAuth }) => {
 
 						<button
 							className={`p-3 rounded-lg border transition-all duration-200 ${
-								authMethod === 'google'
+								authMethod === 'g_auth'
 									? 'border-blue-500 bg-blue-50'
 									: 'border-gray-300 bg-white hover:bg-gray-100'
 							}`}
-							onClick={() => setAuthMethod('google')}
+							onClick={() => setAuthMethod('g_auth')}
 						>
 							<Icon
 								icon="simple-icons:googleauthenticator"

@@ -81,7 +81,7 @@ const WhyBeMySample = ({ language }) => {
 				{translations[language].title}
 			</p>
 
-			<div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-8 lg:gap-12 w-full max-w-6xl">
+			<div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-8 lg:gap-12 w-full max-w-8xl">
 				{features.map((feature, index) => (
 					<motion.div
 						key={index}

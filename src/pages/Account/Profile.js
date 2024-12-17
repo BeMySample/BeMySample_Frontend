@@ -11,6 +11,7 @@ import SecurityAccount from './SecurityAccount'
 import Communication from './Communication'
 import { fetchUser } from '../../api/auth'
 import { Toaster } from 'react-hot-toast'
+import Loading from 'react-loading'
 
 const Profile = () => {
 	const [user, setUser] = useState(null)
@@ -67,6 +68,14 @@ const Profile = () => {
 	return (
 		<>
 			<div className="min-h-screen flex bg-gray-100 font-inter pt-[90px]">
+				{isLoading && (
+					<div className="absolute left-0 bottom-0 right-0 flex flex-col justify-center items-center w-full bg-white bg-opacity-90 backdrop-blur-md z-20 h-screen">
+						<Loading type="spin" color="#1F38DB" height={50} width={50} />
+						<p className="mt-4 text-gray-700 font-semibold">
+							Memuat data pengguna...
+						</p>
+					</div>
+				)}
 				<Toaster position="top-center" reverseOrder={false} />
 				<div className="w-1/4 bg-white rounded-r-2xl p-6">
 					<ul className="space-y-4">
@@ -109,7 +118,9 @@ const Profile = () => {
 					{activeSection === 'about' && (
 						<About profileData={user || profileData} />
 					)}
-					{activeSection === 'security' && <SecurityAccount profileData={user || profileData} />}
+					{activeSection === 'security' && (
+						<SecurityAccount profileData={user || profileData} />
+					)}
 					{activeSection === 'communication' && <Communication />}
 				</div>
 			</div>

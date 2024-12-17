@@ -1,43 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
+import Cookies from 'js-cookie'
 
 const useFetchSurveys = (user) => {
-    const [surveys, setSurveys] = useState([]);
-    const [isLoadingSurveys, setIsLoadingSurveys] = useState(true);
+	const [surveys, setSurveys] = useState([])
+	const [isLoadingSurveys, setIsLoadingSurveys] = useState(true)
 
-    useEffect(() => {
-        const fetchSurveys = async () => {
-            if (!user) {
-                return; // Tunggu data user tersedia
-            }
+	const fetchSurveys = async () => {
+		if (!user) return
 
-            try {
-                const response = await fetch('http://localhost:8000/api/survey');
-                const result = await response.json();
+		try {
+			const token = Cookies.get('auth_token')
+			const response = await fetch('http://localhost:8000/api/surveys', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+			})
 
-                if (!response.ok) {
-                    throw new Error(result.message || 'Gagal mengambil data survei.');
-                }
+			const result = await response.json()
+			if (!response.ok || !result.success) {
+				throw new Error(result.message || 'Gagal mengambil data survei.')
+			}
 
-                // Filter survei berdasarkan user_id
-                const userId = user.id;
-                const filteredSurveys = result.data.filter(
-                    (survey) => survey.user_id === userId
-                );
+			// Filter data survei sesuai user.id
+			const filteredSurveys = result.data.filter(
+				(survey) => survey.user_id === user.id
+			)
 
-                // Simpan hasil yang sudah difilter ke state
-                setSurveys(filteredSurveys);
-            } catch (error) {
-                console.error('Terjadi kesalahan:', error);
-                alert('Terjadi kesalahan saat mengambil data survei.');
-            } finally {
-                setIsLoadingSurveys(false);
-            }
-        };
+			setSurveys(filteredSurveys)
+			console.log('Surveys fetched:', filteredSurveys)
+		} catch (error) {
+			console.error('Terjadi kesalahan:', error)
+			alert('Terjadi kesalahan saat mengambil data survei.')
+		} finally {
+			setIsLoadingSurveys(false)
+		}
+	}
 
-        fetchSurveys();
-    }, [user]);
+	useEffect(() => {
+		fetchSurveys()
+	}, [user])
 
-    return { surveys, isLoadingSurveys };
-};
+	return { surveys, isLoadingSurveys, refetch: fetchSurveys } // Tambahkan refetch
+}
 
-export default useFetchSurveys;
+export default useFetchSurveys

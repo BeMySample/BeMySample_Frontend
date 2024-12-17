@@ -7,7 +7,7 @@ const RightSidebar = ({
   designProps,
 }) => {
   return (
-    <aside className="w-1/5 bg-neutral-100 p-4">
+    <aside className="w-1/5 max-w-[400px] bg-neutral-100 p-4">
       <div className="space-y-6 font-inter text-sm text-gray-700">
         {/* Content Section */}
         <ContentOptions {...contentProps} />

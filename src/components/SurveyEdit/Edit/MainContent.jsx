@@ -28,6 +28,9 @@ const MainContent = ({
 	description,
 	toggleResponseCopy,
 	mustBeFilled,
+	listChoices,
+	setListChoices,
+	handleAddOption,
 	otherOption,
 	minChoices,
 	maxChoices,
@@ -40,7 +43,7 @@ const MainContent = ({
 }) => {
 	const renderSectionContent = () => {
 		switch (contentText) {
-			case 'Selamat datang':
+			case 'Selamat Datang':
 				return (
 					<WelcomeContent
 						viewMode={viewMode}
@@ -101,6 +104,8 @@ const MainContent = ({
 						buttonText={buttonText}
 						buttonTextColor={buttonTextColor}
 						mustBeFilled={mustBeFilled}
+						listChoices={listChoices}
+						setListChoices={setListChoices}
 					/>
 				)
 			case 'Pilihan Ganda':
@@ -117,6 +122,9 @@ const MainContent = ({
 						buttonText={buttonText}
 						buttonTextColor={buttonTextColor}
 						mustBeFilled={mustBeFilled}
+						listChoices={listChoices}
+						setListChoices={setListChoices}
+						handleAddOption={handleAddOption}
 						otherOption={otherOption}
 						minChoices={minChoices}
 						maxChoices={maxChoices}

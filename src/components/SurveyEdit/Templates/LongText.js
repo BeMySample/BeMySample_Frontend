@@ -39,13 +39,8 @@ const LongText = ({
 			className={`flex flex-col justify-center items-start text-gray-700 font-inter relative bg-cover bg-center rounded-lg ${
 				viewMode === 'mobile' ? 'w-[375px] h-[720px] p-4' : 'w-full h-full p-6'
 			}`}
-			style={{
-				backgroundImage: 'url("/path/to/your/background-image.jpg")',
-				backgroundColor: 'rgba(255, 255, 255, 0.7)',
-				backgroundBlendMode: 'overlay',
-			}}
 		>
-			<div className="flex flex-col items-start w-full max-w-[90%] text-center">
+			<div className="flex flex-col items-start w-full max-w-[90%]">
 				{/* Prompt Text */}
 				{isEditingTitle ? (
 					<input
@@ -77,7 +72,7 @@ const LongText = ({
 						onChange={(e) => setDescription(e.target.value)}
 						onBlur={handleDescriptionBlur}
 						autoFocus
-						className={`font-normal mb-4 text-center border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 ${
+						className={`font-normal mb-4 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 ${
 							viewMode === 'mobile' ? 'text-[16px]' : 'text-[18px]'
 						}`}
 						style={{ color: textColor }}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
 import TwoFactorAuthPopup from '../../components/Popup/TwoFactor'
 import GoogleAuthenticatorPopup from '../../components/Popup/GoogleAuth'
@@ -14,6 +14,15 @@ const SecurityAccount = ({ profileData }) => {
 	const [isPopupVisibleEnterPassword, setIsPopupVisibleEnterPassword] =
 		useState(false)
 	const [isPopupVisibleDevice, setIsPopupVisibleDevice] = useState(false)
+
+	useEffect(() => {
+		const status = profileData?.status?.split(',')[0]?.trim() || '' // Pastikan status ada
+		if (status === 'otp' || status === 'g_auth') {
+			setIsAccountSecure(true)
+		} else {
+			setIsAccountSecure(false)
+		}
+	}, [profileData?.status])
 
 	const handleOpenPopupTwoFactor = () => setIsPopupVisibleTwoFactor(true)
 	const handleClosePopupTwoFactor = () => setIsPopupVisibleTwoFactor(false)
@@ -39,7 +48,7 @@ const SecurityAccount = ({ profileData }) => {
 		{
 			title: 'Autentikasi 2 Langkah',
 			value: 'Aktif',
-			otherInfo: profileData.status,
+			otherInfo: profileData?.status || '', // Pastikan nilai default ada
 			icon: 'mdi:lock',
 			onClick: handleOpenPopupTwoFactor,
 		},
@@ -56,7 +65,7 @@ const SecurityAccount = ({ profileData }) => {
 			{isPopupVisibleTwoFactor && (
 				<TwoFactorAuthPopup
 					email={profileData.email}
-					status={profileData.status}
+					status={profileData.status.split(',')[0].trim()} // Ambil data pertama
 					onClose={handleClosePopupTwoFactor}
 					openGoogleAuth={handleOpenPopupGoogleAuth}
 				/>
@@ -129,8 +138,14 @@ const SecurityAccount = ({ profileData }) => {
 						<div className="flex items-center gap-2">
 							<p className="text-sm text-gray-600">{item.value}</p>
 							{item.otherInfo && (
-								<p className="text-white px-2 py-0.5 rounded-full bg-[#0081FB] text-sm uppercase font-semibold">
-									{item.otherInfo}
+								<p
+									className={`text-white px-2 py-0.5 rounded-full text-sm uppercase font-semibold bg-[#0081fb]`}
+								>
+									{item.otherInfo.split(',')[0]?.trim() === 'otp'
+										? 'OTP'
+										: item.otherInfo.split(',')[0]?.trim() === 'g_auth'
+										? 'G Auth'
+										: 'Belum Aktif'}
 								</p>
 							)}
 							<Icon

@@ -74,7 +74,7 @@ const Register = () => {
 				},
 				body: JSON.stringify({
 					username: formData.nama.replace(/\s+/g, '').toLowerCase(),
-					status: '0',
+					status: 'empty',
 					nama_lengkap: formData.nama,
 					email: formData.email,
 					password: formData.password,
@@ -88,7 +88,6 @@ const Register = () => {
 					institusi: '',
 					poin_saya: 0,
 					pekerjaan: '',
-					profilepic: '',
 				}),
 			})
 
@@ -255,8 +254,6 @@ const Register = () => {
 						Daftar
 					</motion.button>
 				</form>
-
-				{errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
 			</motion.div>
 
 			<Helmet>

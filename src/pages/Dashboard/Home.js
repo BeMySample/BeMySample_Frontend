@@ -2,104 +2,16 @@ import { Icon } from '@iconify/react'
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SurveyCard from '../../components/Dashboard/SurveyCard'
 import ContributionCard from '../../components/Dashboard/ContributionCard'
 import Loading from 'react-loading'
 import { fetchUser } from '../../api/auth'
 import useFetchSurveys from '../../hooks/useFetchSurveys'
 import useFetchContributions from '../../hooks/useFetchContributions'
-
-const LOCAL_STORAGE_KEY = 'surveyData'
-
-const generateUniqueID = () => {
-	return (
-		Math.random().toString(36).substr(2, 10) +
-		Math.random().toString(36).substr(2, 10)
-	)
-}
-
-const getFormattedDate = () => {
-	const date = new Date()
-	const options = {
-		day: '2-digit',
-		month: 'long',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'Asia/Jakarta',
-	}
-
-	const formattedDate = new Intl.DateTimeFormat('id-ID', options).format(date)
-	return `${formattedDate} WIB`
-}
-
-const saveNewSurveyToLocalStorage = (
-	surveyId,
-	surveyTemplate = null,
-	isAI = false
-) => {
-	const initialSurveyData = {
-		[surveyId]: {
-			sections: [
-				{
-					id: 'welcome',
-					label: 'Selamat datang',
-					icon: 'hugeicons:start-up-02',
-				},
-				{
-					id: 'thankYou',
-					label: 'Terima Kasih',
-					icon: 'icon-park-outline:bye',
-				},
-			],
-			surveyTitle: 'Survei Baru',
-			activeSection: 'welcome',
-			data: {
-				welcome: {
-					contentText: 'Selamat datang',
-					buttonText: 'Mulai',
-					backgroundImage: null,
-					bgColor: '#FFFFFF',
-					buttonColor: '#1F38DB',
-					textColor: '#000000',
-					title: 'Isi Judul di sini',
-					description: 'Isi deskripsi di sini',
-				},
-				thankYou: {
-					contentText: 'Closing',
-					buttonText: 'Selesai',
-					backgroundImage: null,
-					bgColor: '#FFFFFF',
-					buttonColor: '#1F38DB',
-					textColor: '#000000',
-					title: 'Isi Judul di sini',
-					description: 'Isi deskripsi di sini',
-				},
-			},
-			updated: getFormattedDate(),
-			status: 'draft',
-			respondents: 0,
-			isAI: isAI,
-		},
-	}
-
-	// Ambil data survei yang sudah ada di localStorage
-	const existingData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-
-	let updatedData
-	if (isAI && surveyTemplate) {
-		// Jika survei dibuat dengan AI, gunakan surveyTemplate
-		updatedData = { ...existingData, ...{ [surveyId]: surveyTemplate } }
-	} else {
-		// Jika survei dibuat secara manual, gunakan initialSurveyData
-		updatedData = { ...existingData, ...initialSurveyData }
-	}
-
-	// Simpan data terbaru ke localStorage
-	localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedData))
-}
+import Cookies from 'js-cookie'
+import toast, { Toaster } from 'react-hot-toast'
+import axios from 'axios'
 
 const Home = () => {
 	const navigate = useNavigate()
@@ -119,29 +31,90 @@ const Home = () => {
 		getUser()
 	}, [])
 
-	const { surveys, isLoadingSurveys } = useFetchSurveys(user)
+	const { surveys, isLoadingSurveys, refetch } = useFetchSurveys(user)
 	const { contributions, isLoadingContributions } = useFetchContributions()
 	const [activeMenuId, setActiveMenuId] = useState(null)
 	const [loadingPopup, setLoadingPopup] = useState(false)
 	const [showDeleteModal, setShowDeleteModal] = useState(false)
 	const [selectedSurveyId, setSelectedSurveyId] = useState(null)
 
-	// useEffect(() => {
-	// 	const storedSurveys =
-	// 		JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-	// 	setSurveys(
-	// 		Object.keys(storedSurveys).map((id) => ({ id, ...storedSurveys[id] }))
-	// 	)
-	// }, [])
-
-	const handleCreateSurvey = () => {
+	const handleCreateSurvey = async () => {
 		setLoadingPopup(true)
-		setTimeout(() => {
-			const newSurveyId = generateUniqueID()
-			saveNewSurveyToLocalStorage(newSurveyId)
+
+		const surveyData = {
+			surveyTitle: 'Customer Satisfaction Survey',
+			surveyDescription:
+				'This survey collects feedback on customer experience.',
+			backgroundImage: 'https://file.com',
+			thumbnail: 'https://file.com',
+			bgColor: '#ffffff',
+			createdByAI: false,
+			respondents: 0,
+			maxRespondents: 100,
+			coinAllocated: 100,
+			coinUsed: 0,
+			kriteria: 'age>18',
+			status: 'draft',
+			sections: [
+				{
+					icon: 'icon1.png',
+					label: 'Personal Information',
+					bgColor: '#f2f2f2',
+					bgOpacity: 2,
+					buttonColor: '#0081FB',
+					buttonText: 'Next',
+					buttonTextColor: '#fff',
+					contentText: 'Please provide your name and age.',
+					dateFormat: 'MM/DD/YYYY',
+					description: 'This section collects basic personal details.',
+					largeLabel: 'Name',
+					listChoices: [
+						{ label: 'Regresi Linear', value: 'A' },
+						{ label: 'Regresi Logistik', value: 'B' },
+						{ label: 'Support Vector Machine (SVM)', value: 'C' },
+						{ label: 'Random Forest', value: 'D' },
+						{ label: 'Neural Network', value: 'E' },
+					],
+					maxChoices: 1,
+					midLabel: 'Age',
+					minChoices: 0,
+					mustBeFilled: true,
+					optionsCount: 3,
+					otherOption: true,
+					smallLabel: 'Other',
+					textColor: '#000000',
+					timeFormat: '24-hour',
+					title: 'Section 1',
+					toggleResponseCopy: false,
+				},
+			],
+		}
+
+		try {
+			const token = Cookies.get('auth_token')
+
+			// Request menggunakan Axios
+			const response = await axios.post(
+				'http://localhost:8000/api/surveys',
+				surveyData,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'application/json',
+					},
+				}
+			)
+
+			console.log('Survey berhasil dibuat:', response.data)
+
+			// Redirect ke halaman edit survey jika sukses
+			navigate(`/dashboard/survey/edit/${response.data.data.id}`)
+		} catch (error) {
+			console.error('Terjadi kesalahan:', error.response?.data || error.message)
+			alert('Terjadi kesalahan saat membuat survei.')
+		} finally {
 			setLoadingPopup(false)
-			navigate(`/dashboard/survey/edit/${newSurveyId}`)
-		}, 2000)
+		}
 	}
 
 	const handleEdit = (id) => {
@@ -149,25 +122,33 @@ const Home = () => {
 		setActiveMenuId(null)
 	}
 
-	const handleDelete = (id) => {
+	const handleDeleteSurvey = async (id) => {
 		setSelectedSurveyId(id)
 		setShowDeleteModal(true)
 	}
 
-	const confirmDelete = () => {
-		const updatedSurveys = {
-			...JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)),
-		}
-		delete updatedSurveys[selectedSurveyId]
-		localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedSurveys))
-		// setSurveys(
-		// 	Object.keys(updatedSurveys).map((key) => ({
-		// 		id: key,
-		// 		...updatedSurveys[key],
-		// 	}))
-		// )
+	const confirmDelete = async () => {
+		const token = Cookies.get('auth_token')
+
+		await toast.promise(
+			axios.delete(`http://localhost:8000/api/surveys/${selectedSurveyId}`, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}),
+			{
+				loading: 'Menghapus survei...',
+				success: 'Survei berhasil dihapus!',
+				error: 'Terjadi kesalahan saat menghapus survei.',
+			}
+		)
+
+		// Reset state setelah penghapusan
 		setActiveMenuId(null)
 		setShowDeleteModal(false)
+
+		// Panggil ulang fetch surveys
+		await refetch()
 	}
 
 	const toggleMenu = (id) => {
@@ -197,10 +178,9 @@ const Home = () => {
 			const surveyTemplate = data.surveyTemplate
 			console.log('Survey template:', surveyTemplate)
 
-			const newSurveyId = generateUniqueID()
-			saveNewSurveyToLocalStorage(newSurveyId, surveyTemplate, true)
+			// const newSurveyId = generateUniqueID()
 			// setSurveys((prev) => [...prev, { id: newSurveyId, ...surveyTemplate }])
-			navigate(`/dashboard/survey/edit/${newSurveyId}`)
+			// navigate(`/dashboard/survey/edit/${newSurveyId}`)
 		} catch (error) {
 			console.error('Terjadi kesalahan:', error)
 			alert('Terjadi kesalahan saat membuat survei.')
@@ -209,6 +189,7 @@ const Home = () => {
 
 	return (
 		<>
+			<Toaster />
 			<div className="w-full bg-white pt-[120px] flex flex-col items-center px-4 md:px-14 font-inter">
 				<div className="flex flex-row items-center justify-center w-full gap-[16px] flex-wrap">
 					<motion.button
@@ -365,22 +346,28 @@ const Home = () => {
 						<div className="flex flex-col gap-[16px] w-full">
 							{isLoadingSurveys ? (
 								// Tampilkan spinner loading saat data sedang dimuat
-								<Loading type="spin" color="#1F38DB" height={50} width={50} />
+								<div className="flex flex-col gap-2 justify-center items-center w-full h-[200px] border-2 rounded-2xl">
+									<Loading type="spin" color="#1F38DB" height={50} width={50} />
+									Memuat data survei...
+								</div>
 							) : surveys.length > 0 ? (
 								// Tampilkan daftar survei jika ada data
 
 								surveys.map((survey) => (
 									<SurveyCard
 										key={survey.id}
-										title={survey.judul_survey}
-										respondents={survey.responden_now}
+										title={survey.surveyTitle}
+										respondents={survey.respondents}
+										createdByAI={survey.createdByAI}
+										coinAllocated={survey.coinAllocated}
+										coinUsed={survey.coinUsed}
 										updated={survey.updated_at}
 										image={survey.thumbnail}
 										status={survey.status}
 										isActive={activeMenuId === survey.id}
 										onToggleMenu={() => toggleMenu(survey.id)}
 										onEdit={() => handleEdit(survey.id)}
-										onDelete={() => handleDelete(survey.id)}
+										onDelete={() => handleDeleteSurvey(survey.id)}
 									/>
 								))
 							) : (
@@ -423,7 +410,10 @@ const Home = () => {
 						</div>
 						{isLoadingContributions ? (
 							// Tampilkan spinner loading
-							<Loading type="spin" color="#1F38DB" height={50} width={50} />
+							<div className="flex flex-col gap-2 justify-center items-center w-full h-[200px] border-2 rounded-2xl">
+								<Loading type="spin" color="#1F38DB" height={50} width={50} />
+								Memuat data kontribusi...
+							</div>
 						) : contributions.length > 0 ? (
 							// Tampilkan daftar kontribusi jika data tersedia
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">

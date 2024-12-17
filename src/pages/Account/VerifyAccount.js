@@ -17,6 +17,10 @@ const OTPForm = () => {
 	const [otp, setOtp] = useState(['', '', '', '', '', ''])
 	const [countdown, setCountdown] = useState(0)
 
+	// Cek path untuk menentukan logika
+	const isLogin = window.location.pathname.includes('login')
+	const isRegister = window.location.pathname.includes('register')
+
 	useEffect(() => {
 		const fetchEmail = async () => {
 			try {
@@ -93,24 +97,32 @@ const OTPForm = () => {
 
 			toast.success(otpResponse.data.message)
 
-			const userResponse = await axios.get(
-				`http://localhost:8000/api/users/${id}`
-			)
-			const userData = userResponse.data
+			// Logika jika URL mengandung 'login'
+			if (isLogin) {
+				navigate('/dashboard')
+				return
+			}
 
-			const updatedUserData = { ...userData, status: '1' }
+			// Logika jika URL mengandung 'register'
+			if (isRegister) {
+				const userResponse = await axios.get(
+					`http://localhost:8000/api/users/${id}`
+				)
+				const userData = userResponse.data
 
-			const statusUpdateResponse = await axios.post(
-				`http://localhost:8000/api/users/edit/${id}`,
-				updatedUserData
-			)
+				const updatedUserData = { ...userData, status: 'otp' }
 
-			if (statusUpdateResponse.status === 200) {
-				toast.success('Status akun berhasil diperbarui!')
+				const statusUpdateResponse = await axios.post(
+					`http://localhost:8000/api/users/edit/${id}`,
+					updatedUserData
+				)
 
-				navigate(`/register/${encodedId}/fill-data`)
-			} else {
-				throw new Error('Gagal memperbarui status pengguna.')
+				if (statusUpdateResponse.status === 200) {
+					toast.success('Status akun berhasil diperbarui!')
+					navigate(`/register/${encodedId}/fill-data`)
+				} else {
+					throw new Error('Gagal memperbarui status pengguna.')
+				}
 			}
 		} catch (error) {
 			console.error('Error verifying OTP or updating status:', error)

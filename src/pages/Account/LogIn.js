@@ -55,10 +55,6 @@ const Login = () => {
 	const handleSubmit = (e) => {
 		e.preventDefault()
 		setFormSubmitted(true)
-
-		if (isFormValid) {
-			console.log('Form submitted:', { email, password })
-		}
 	}
 
 	const handleEmailLogin = async () => {
@@ -73,7 +69,9 @@ const Login = () => {
 
 					Cookies.set('auth_token', token, { expires: 7, secure: true })
 
-					navigate('/dashboard/home')
+					const userResponse = await fetchUser()
+					const encodedId = btoa(userResponse.data.data.id.toString())
+					navigate(`/login/${encodedId}/verify-account`)
 				})(),
 				{
 					loading: 'Sedang memproses login...',
@@ -119,12 +117,7 @@ const Login = () => {
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center min-h-screen bg-gray-100">
-				<ReactLoading
-					type="spinningBubbles"
-					color="#1F38DB"
-					height={80}
-					width={80}
-				/>
+				<ReactLoading type="spin" color="#1F38DB" height={80} width={80} />
 			</div>
 		)
 	}
@@ -136,12 +129,7 @@ const Login = () => {
 			{/* Animasi overlay saat redirect */}
 			{isRedirecting && (
 				<div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50">
-					<ReactLoading
-						type="spinningBubbles"
-						color="#ffffff"
-						height={80}
-						width={80}
-					/>
+					<ReactLoading type="spin" color="#ffffff" height={80} width={80} />
 				</div>
 			)}
 
@@ -266,11 +254,14 @@ const Login = () => {
 									Kata sandi tidak boleh kosong.
 								</p>
 							)}
-							<div className="flex w-full justify-end mt-1 text-xs sm:text-sm md:text-base">
+							<Link
+								to="/forgot-password"
+								className="flex w-full justify-end mt-1 text-xs sm:text-sm md:text-base"
+							>
 								<button className="hover:text-blue-600">
 									Lupa Kata Sandi?
 								</button>
-							</div>
+							</Link>
 						</label>
 					</div>
 

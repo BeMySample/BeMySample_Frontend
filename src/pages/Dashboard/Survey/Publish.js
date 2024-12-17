@@ -1,180 +1,217 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import toast, { Toaster } from 'react-hot-toast'
-import NavBar from '../../../components/Navbar'
-import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
-import ProfilePict from '../../../assets/images/profilepict.png'
 import { Icon } from '@iconify/react'
 import defaultCover from '../../../assets/images/defaultCover.png'
 import decor1 from '../../../assets/images/section1publish.png'
-import footerDecorUnpublished from '../../../assets/images/groupFooterUnpublished.png'
 import footerUnpublished from '../../../assets/images/footerGrayscalePublish.png'
 import penguinFooterPublish from '../../../assets/images/penguinFooterPublish.png'
 import { Helmet } from 'react-helmet'
-import DesktopContent from '../../../components/SurveyEdit/Publish/DesktopContent'
-import MobileContent from '../../../components/SurveyEdit/Publish/MobileContent'
+import Cookies from 'js-cookie'
+import axios from 'axios'
+import { fetchUser } from '../../../api/auth'
+import Loading from 'react-loading'
+import { toast } from 'react-hot-toast'
+import StatisticBox from '../Results/StatisticBox'
 
-const LOCAL_STORAGE_KEY = 'surveyData'
+const Publish = ({ id }) => {
+	const [surveyTitle, setSurveyTitle] = useState('')
+	const [surveyData, setSurveyData] = useState({})
+	const [surveyKriteria, setSurveyKriteria] = useState({})
+	const [surveyDescription, setSurveyDescription] = useState('')
+	const [respondentsTarget, setRespondentsTarget] = useState(0)
+	const [myPoinPerRespondent, setMyPoinPerRespondent] = useState(0)
+	const [totalMyPoin, setTotalMyPoin] = useState(0)
+	const [myPoinBalance, setMyPoinBalance] = useState(0)
+	const [isLoading, setIsLoading] = useState(true)
+	const [user, setUser] = useState(null)
+	const [minAge, setMinAge] = useState(0)
+	const [maxAge, setMaxAge] = useState(0)
 
-const getFormattedDate = () => {
-	const date = new Date()
-	const options = {
-		day: '2-digit',
-		month: 'long',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'Asia/Jakarta',
-	}
-
-	const formattedDate = new Intl.DateTimeFormat('id-ID', options).format(date)
-	return `${formattedDate} WIB`
-}
-
-const Publish = () => {
-	const { id } = useParams()
-
-	const [viewMode, setViewMode] = useState('desktop')
-
-	const toggleViewMode = (mode) => {
-		setViewMode(mode)
-	}
-
-	const [activeSection, setActiveSection] = useState('welcome')
-	const [sections, setSections] = useState([
-		{ id: 'welcome', label: 'Selamat datang', icon: 'hugeicons:start-up-02' },
-		{ id: 'thankYou', label: 'Closing', icon: 'icon-park-outline:bye' },
-	])
-
-	const [surveyTitle, setSurveyTitle] = useState(
-		JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))?.[id]?.surveyTitle ||
-			'Survei Baru'
-	)
-	const [contentText, setContentText] = useState('')
-	const [surveyStatus, setSurveyStatus] = useState('draft')
-	const [respondents, setRespondents] = useState(0)
-	const [surveyUpdated, setSurveyUpdated] = useState(getFormattedDate())
-	const [buttonText, setButtonText] = useState('Mulai')
-	const [backgroundImage, setBackgroundImage] = useState(null)
-	const [bgColor, setBgColor] = useState('#FFFFFF')
-	const [buttonColor, setButtonColor] = useState('#1F38DB')
-	const [textColor, setTextColor] = useState('#000000')
-	const [title, setTitle] = useState('Isi Judul di sini')
-	const [description, setDescription] = useState('Isi deskripsi di sini')
-	const [unsavedChanges, setUnsavedChanges] = useState(false)
+	const token = Cookies.get('auth_token')
 
 	useEffect(() => {
-		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-		const surveyData = savedData[id]
+		const fetchData = async () => {
+			try {
+				// Fetch User Data
+				const userResponse = await fetchUser()
+				const userData = userResponse.data.data
+				setUser(userData)
+				setMyPoinBalance(userData.poin_saya)
+				console.log('User:', userData)
 
-		if (surveyData) {
-			setSections(surveyData.sections || sections)
-			setSurveyTitle(surveyData.surveyTitle || 'Survei Baru')
+				// Fetch Survey Data
+				const surveyResponse = await axios.get(
+					`http://localhost:8000/api/surveys/${id}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
+				)
+				const surveyData = surveyResponse.data.data
+				setSurveyData(surveyData)
+				console.log('Data survei:', surveyData)
 
-			// Set the first section as active if there is no active section saved
-			const initialSection = surveyData.activeSection || sections[0].id
-			setActiveSection(initialSection)
+				// Cek dan set kriteria jika tersedia
+				if (surveyData.kriteria && surveyData.kriteria.length > 0) {
+					const kriteria = surveyData.kriteria[0] // Ambil kriteria pertama
+					setSurveyKriteria(kriteria)
 
-			// Load other data as usual
-			const sectionData = surveyData.data[initialSection] || {}
-			setSurveyStatus(surveyData.status || 'draft')
-			setRespondents(surveyData.respondents || 0)
-			setSurveyUpdated(surveyData.updated || getFormattedDate())
-			setContentText(sectionData.contentText || '')
-			setButtonText(sectionData.buttonText || 'Mulai')
-			setBackgroundImage(surveyData.backgroundImage || null)
-			setBgColor(surveyData.bgColor || '#FFFFFF')
-			setButtonColor(sectionData.buttonColor || '#1F38DB')
-			setTextColor(sectionData.textColor || '#000000')
-			setTitle(sectionData.title || 'Terima kasih!')
-			setDescription(
-				sectionData.description || 'Anda sudah menyelesaikan survei ini.'
-			)
-		} else {
-			// Set the first section as active if no data is found
-			setActiveSection(sections[0].id)
+					// Split nilai umur target dari age_target
+					const [minAgeValue, maxAgeValue] = kriteria.age_target.split(',')
+					setMinAge(parseInt(minAgeValue, 10))
+					setMaxAge(parseInt(maxAgeValue, 10))
+				} else {
+					console.warn('Kriteria tidak ditemukan dalam survei.')
+				}
+
+				// Set State Berdasarkan Data Survei
+				setSurveyTitle(surveyData.surveyTitle)
+				setSurveyDescription(surveyData.surveyDescription)
+				setRespondentsTarget(surveyData.maxRespondents)
+				setMyPoinPerRespondent(surveyData.coinAllocated)
+				setTotalMyPoin(surveyData.maxRespondents * surveyData.coinAllocated)
+			} catch (error) {
+				console.error('Gagal mengambil data:', error)
+			} finally {
+				setIsLoading(false)
+			}
 		}
+
+		fetchData()
 	}, [id])
 
-	const handleTitleChange = (newTitle) => {
-		setSurveyTitle(newTitle)
-		setUnsavedChanges(true)
-	}
+	// Fungsi untuk handle upload gambar sampul
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [selectedImage, setSelectedImage] = useState(surveyData.thumbnail || '')
+	const [imageLink, setImageLink] = useState('')
 
-	const handleSectionChange = (sectionId) => {
-		setActiveSection(sectionId)
+	// Fungsi untuk handle upload gambar file
+	const uploadFile = async (e) => {
+		const file = e.target.files[0] // Ambil file dari input
+		if (!file) {
+			toast.error('Tidak ada file yang dipilih.')
+			return
+		}
 
-		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-		const surveyData = savedData[id] || {}
-		const sectionData = savedData[id]?.data[sectionId] || {}
-		setContentText(sectionData.contentText || '')
+		toast.promise(
+			(async () => {
+				try {
+					// Buat FormData dan tambahkan semua data survei lengkap
+					const formData = new FormData()
 
-		setButtonText(sectionData.buttonText || 'Mulai')
-		setBackgroundImage(surveyData.backgroundImage || null)
-		setBgColor(surveyData.bgColor || '#FFFFFF')
-		setButtonColor(sectionData.buttonColor || '#1F38DB')
-		setTextColor(sectionData.textColor || '#000000')
-		setTitle(sectionData.title || 'Isi Judul di sini')
-		setDescription(sectionData.description || 'Isi deskripsi di sini')
-	}
+					Object.entries(surveyData).forEach(([key, value]) => {
+						if (key === 'thumbnail') return // Skip thumbnail lama
+						if (key === 'kriteria' || key === 'sections') {
+							formData.append(key, JSON.stringify(value)) // JSON stringify untuk nested data
+						} else {
+							formData.append(key, value || '') // Handle nilai null/undefined
+						}
+					})
 
-	const [activeMenu, setActiveMenu] = useState('Terbitkan')
+					formData.append('thumbnail', file) // Tambahkan file thumbnail baru
 
-	const handleMenuClick = (menu) => {
-		setActiveMenu(menu)
-	}
+					// Kirim PUT request
+					const response = await axios.put(
+						`http://localhost:8000/api/surveys/${id}`,
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+								Authorization: `Bearer ${token}`,
+							},
+						}
+					)
 
-	const [user, setUser] = useState({ name: '', avatar: '' })
-	const navigate = useNavigate()
+					// Update state setelah sukses
+					setSurveyData(response.data.data)
+					setSelectedImage(URL.createObjectURL(file))
+					setIsModalOpen(false)
 
-	// useEffect(() => {
-	// 	const params = new URLSearchParams(window.location.search)
-	// 	const name = params.get('name')
-	// 	let avatar = params.get('avatar')
-	// 	const token = params.get('token')
-
-	// 	if (avatar && avatar.includes('=s96-c')) {
-	// 		avatar = avatar.replace('=s96-c', '')
-	// 	}
-
-	// 	if (name && avatar && token) {
-	// 		const userData = { name, avatar, token }
-	// 		localStorage.setItem('user', JSON.stringify(userData))
-	// 		setUser(userData)
-
-	// 		window.history.replaceState({}, document.title, '/dashboard')
-	// 	} else {
-	// 		const savedUser = JSON.parse(localStorage.getItem('user'))
-	// 		if (savedUser) {
-	// 			setUser(savedUser)
-	// 		} else {
-	// 			navigate('/login')
-	// 		}
-	// 	}
-	// }, [navigate])
-
-	const [selectedImage, setSelectedImage] = useState(defaultCover)
-
-	const handleReplaceImage = () => {
-		const inputElement = document.createElement('input')
-		inputElement.type = 'file'
-		inputElement.accept = 'image/*'
-		inputElement.style.display = 'none'
-		inputElement.addEventListener('change', (event) => {
-			const file = event.target.files[0]
-			if (file) {
-				setSelectedImage(URL.createObjectURL(file))
+					return 'Sampul berhasil diperbarui!'
+				} catch (error) {
+					throw new Error('Gagal memperbarui sampul.')
+				}
+			})(),
+			{
+				loading: 'Mengunggah gambar...',
+				success: 'Sampul berhasil diperbarui!',
+				error: 'Gagal memperbarui sampul.',
 			}
-		})
-		inputElement.click() // Membuka dialog file
+		)
+	}
+
+	// Fungsi untuk handle upload melalui link
+	const uploadByLink = async () => {
+		if (!imageLink) {
+			toast.error('Link gambar tidak boleh kosong.')
+			return
+		}
+
+		toast.promise(
+			(async () => {
+				try {
+					// Buat objek data lengkap
+					const updatedData = {
+						...surveyData, // Salin semua data survei lama
+						thumbnail: imageLink, // Update hanya thumbnail
+						kriteria: surveyData.kriteria, // Pastikan kriteria dikirim
+						sections: surveyData.sections, // Pastikan sections dikirim
+					}
+
+					// Kirim PUT request
+					const response = await axios.put(
+						`http://localhost:8000/api/surveys/${id}`,
+						updatedData,
+						{
+							headers: {
+								'Content-Type': 'application/json',
+								Authorization: `Bearer ${token}`,
+							},
+						}
+					)
+
+					// Update state setelah sukses
+					setSurveyData(response.data.data)
+					setSelectedImage(imageLink)
+					setIsModalOpen(false)
+
+					return 'Sampul berhasil diperbarui!'
+				} catch (error) {
+					throw new Error('Gagal memperbarui sampul.')
+				}
+			})(),
+			{
+				loading: 'Memproses link...',
+				success: 'Sampul berhasil diperbarui!',
+				error: 'Gagal memperbarui sampul.',
+			}
+		)
+	}
+
+	const [selectedGender, setSelectedGender] = useState(
+		surveyKriteria?.gender_target || 'Semua'
+	)
+
+	const onGenderChange = (gender) => {
+		setSurveyKriteria((prev) => ({ ...prev, gender_target: gender }))
+		console.log('Gender Target:', gender)
+	}
+
+	const handleGenderSelect = (gender) => {
+		setSelectedGender(gender)
+		onGenderChange(gender) // Fungsi callback untuk menyimpan data di parent component
 	}
 
 	return (
 		<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
-			<Toaster position="top-right" />
 			<div className="min-h-20" />
 
+			{isLoading && (
+				<div className="absolute left-0 bottom-0 right-0 flex flex-col justify-center items-center w-full bg-white bg-opacity-90 backdrop-blur-md z-20 h-screen">
+					<Loading type="spin" color="#1F38DB" height={50} width={50} />
+					<p className="mt-4 text-gray-700 font-semibold">
+						Memuat data survei...
+					</p>
+				</div>
+			)}
 			<div className="flex flex-row gap-4 m-7 justify-center z-10">
 				<div className="bg-white p-7 rounded-lg shadow-lg w-[500px] relative overflow-clip h-full">
 					<div className="size-[84px] absolute -top-9 -right-9 bg-[#1F38DB] flex items-center justify-center rounded-full">
@@ -187,36 +224,68 @@ const Publish = () => {
 						Tentukan kriteria responden. Biarkan kosong apabila tidak ingin
 						menentukan kriteria.
 					</p>
-					<div className="flex flex-row gap-2 items-center justify-between">
-						<div className="flex flex-col items-center gap-2">
-							<div className="bg-zinc-100 rounded-full p-6">
+					<div className="flex flex-row gap-4 items-center justify-between">
+						{/* Semua */}
+						<div
+							className={`flex flex-col items-center gap-2 cursor-pointer ${
+								selectedGender === 'Semua' ? 'opacity-100' : 'opacity-60'
+							}`}
+							onClick={() => handleGenderSelect('Semua')}
+						>
+							<div
+								className={`rounded-full p-6 transition ${
+									selectedGender === 'Semua' ? 'bg-purple-100' : 'bg-zinc-100'
+								}`}
+							>
 								<Icon
 									fontSize={60}
 									icon="ph:gender-intersex-duotone"
 									className="text-purple-600"
 								/>
 							</div>
-							<p>Semua</p>
+							<p className="font-medium text-gray-700">Semua</p>
 						</div>
-						<div className="flex flex-col items-center gap-2">
-							<div className="bg-zinc-100 rounded-full p-6">
+
+						{/* Pria */}
+						<div
+							className={`flex flex-col items-center gap-2 cursor-pointer ${
+								selectedGender === 'male' ? 'opacity-100' : 'opacity-60'
+							}`}
+							onClick={() => handleGenderSelect('male')}
+						>
+							<div
+								className={`rounded-full p-6 transition ${
+									selectedGender === 'male' ? 'bg-blue-100' : 'bg-zinc-100'
+								}`}
+							>
 								<Icon
 									fontSize={60}
 									icon="mingcute:male-line"
 									className="text-blue-600"
 								/>
 							</div>
-							<p>Pria</p>
+							<p className="font-medium text-gray-700">Pria</p>
 						</div>
-						<div className="flex flex-col items-center gap-2">
-							<div className="bg-zinc-100 rounded-full p-6">
+
+						{/* Wanita */}
+						<div
+							className={`flex flex-col items-center gap-2 cursor-pointer ${
+								selectedGender === 'female' ? 'opacity-100' : 'opacity-60'
+							}`}
+							onClick={() => handleGenderSelect('female')}
+						>
+							<div
+								className={`rounded-full p-6 transition ${
+									selectedGender === 'female' ? 'bg-pink-100' : 'bg-zinc-100'
+								}`}
+							>
 								<Icon
 									fontSize={60}
 									icon="ion:female"
 									className="text-pink-500"
 								/>
 							</div>
-							<p>Wanita</p>
+							<p className="font-medium text-gray-700">Wanita</p>
 						</div>
 					</div>
 
@@ -227,12 +296,14 @@ const Publish = () => {
 								<div className="flex flex-row gap-2 items-center">
 									<input
 										type="number"
+										value={minAge}
 										placeholder="Minimum"
 										className="p-2 rounded border border-gray-300 bg-white w-full"
 									/>
 									<p>-</p>
 									<input
 										type="number"
+										value={maxAge}
 										placeholder="Maksimum"
 										className="p-2 rounded border border-gray-300 bg-white w-full"
 									/>
@@ -242,6 +313,7 @@ const Publish = () => {
 								<label className="text-gray-800 min-w-44">Lokasi</label>
 								<input
 									type="text"
+									value={surveyKriteria.lokasi}
 									placeholder="Provinsi, kota, ..."
 									className="p-2 rounded border border-gray-300 bg-white w-full"
 								/>
@@ -250,6 +322,7 @@ const Publish = () => {
 								<label className="text-gray-800 min-w-44">Hobi</label>
 								<input
 									type="text"
+									value={surveyKriteria.hobi}
 									placeholder="Membaca, berolahraga, ..."
 									className="p-2 rounded border border-gray-300 bg-white w-full"
 								/>
@@ -258,6 +331,7 @@ const Publish = () => {
 								<label className="text-gray-800 min-w-44">Pekerjaan</label>
 								<input
 									type="text"
+									value={surveyKriteria.pekerjaan}
 									placeholder="Pegawai, pelajar, ..."
 									className="p-2 rounded border border-gray-300 bg-white w-full"
 								/>
@@ -266,6 +340,7 @@ const Publish = () => {
 								<label className="text-gray-800 min-w-44">Tempat Bekerja</label>
 								<input
 									type="text"
+									value={surveyKriteria.tempat_bekerja}
 									placeholder="Nama perusahaan"
 									className="p-2 rounded border border-gray-300 bg-white w-full"
 								/>
@@ -322,6 +397,7 @@ const Publish = () => {
 										</label>
 										<input
 											type="number"
+											value={respondentsTarget}
 											placeholder="Misal: 20"
 											className="p-2 rounded border border-gray-300 bg-white w-full"
 										/>
@@ -332,6 +408,7 @@ const Publish = () => {
 										</label>
 										<input
 											type="text"
+											value={myPoinPerRespondent}
 											placeholder="Misal: 200"
 											className="p-2 rounded border border-gray-300 bg-white w-full"
 										/>
@@ -343,21 +420,39 @@ const Publish = () => {
 							<div className="flex flex-col gap-4">
 								<div className="flex flex-row gap-4 items-center justify-between">
 									<p className="text-gray-800">Total MyPoin yang dikeluarkan</p>
-									<p className="font-semibold">0</p>
+									<p className="font-semibold">
+										{totalMyPoin.toLocaleString('id-ID')}
+									</p>
 								</div>
 
 								<div className="flex flex-row gap-4 items-center justify-between">
 									<p className="text-gray-800">MyPoin saya</p>
-									<p className="">200.000</p>
+									<p className="">{myPoinBalance.toLocaleString('id-ID')}</p>
 								</div>
 							</div>
 
 							<div className="my-4 border border-[#757575]" />
 
-							<div className="flex flex-row gap-4 items-center justify-between">
-								<p className="text-gray-800">Sisa MyPoin</p>
-								<p className="text-[#14AE5C]">200.000</p>
-							</div>
+							{myPoinBalance - totalMyPoin < 0 ? (
+								<div className="flex flex-row items-center justify-center gap-2 bg-red-200 rounded-xl py-2 px-4 mt-4">
+									<Icon icon="ix:warning-filled" className="text-red-500" />
+									<p className="text-red-500">MyPoin Anda tidak cukup!</p>
+								</div>
+							) : (
+								<div className="flex flex-row gap-4 items-center justify-between">
+									<p className="text-gray-800">Sisa MyPoin</p>
+									{(myPoinBalance - totalMyPoin).toLocaleString('id-ID') >=
+									0 ? (
+										<p className="font-semibold text-green-600">
+											{(myPoinBalance - totalMyPoin).toLocaleString('id-ID')}
+										</p>
+									) : (
+										<p className="text-red-500 font-semibold">
+											{(myPoinBalance - totalMyPoin).toLocaleString('id-ID')}
+										</p>
+									)}
+								</div>
+							)}
 						</div>
 
 						<div className="bg-white p-7 rounded-lg shadow-lg w-[500px] relative overflow-clip h-full">
@@ -377,6 +472,7 @@ const Publish = () => {
 										<label className="text-gray-800 min-w-44">Judul</label>
 										<input
 											type="text"
+											value={surveyTitle}
 											placeholder="Judul survei"
 											className="p-2 rounded border border-gray-300 bg-white w-full"
 										/>
@@ -386,7 +482,7 @@ const Publish = () => {
 										<label className="text-gray-800 min-w-44">Sampul</label>
 										<div
 											className="relative w-full h-32 rounded border cursor-pointer hover:opacity-80"
-											onClick={handleReplaceImage} // Klik untuk mengganti gambar
+											// onClick={handleReplaceImage} // Klik untuk mengganti gambar
 										>
 											<img
 												src={selectedImage}
@@ -405,6 +501,7 @@ const Publish = () => {
 										<label className="text-gray-800 min-w-44">Deskripsi</label>
 										<input
 											type="text"
+											value={surveyDescription}
 											placeholder="Apa tujuan survei ini?"
 											className="p-2 rounded border border-gray-300 bg-white w-full"
 										/>
@@ -413,22 +510,10 @@ const Publish = () => {
 									<div className="flex flex-row items-start">
 										<label className="text-gray-800 min-w-44">Isi Konten</label>
 										<div className="flex flex-row gap-2 items-center w-full">
-											<div className="flex flex-row items-center justify-center bg-[#E6E6E6] rounded-xl px-4 py-2 w-full">
-												<p className="flex flex-col items-center gap-0.5">
-													<span className="text-[#2073DB] text-2xl font-semibold">
-														6
-													</span>
-													<span>Pertanyaan</span>
-												</p>
-											</div>
-											<div className="flex flex-row items-center justify-center bg-[#E6E6E6] rounded-xl px-4 py-2 w-full">
-												<p className="flex flex-col items-center gap-0.5">
-													<span className="text-[#2073DB] text-2xl font-semibold">
-														3
-													</span>
-													<span>Lainnya</span>
-												</p>
-											</div>
+											<StatisticBox
+												label="Pertanyaan"
+												value={surveyData.sections?.length || 0}
+											/>
 										</div>
 									</div>
 								</form>
@@ -440,20 +525,45 @@ const Publish = () => {
 						<div className="bg-gradient-to-r from-white from-40% to-80% to-transparent h-full rounded-lg w-full absolute px-12 flex items-center backdrop-blur-[2px]">
 							<div className="flex items-start justify-start w-full">
 								<div className="flex flex-col items-center justify-start gap-2 w-[40%]">
-									<p className="text-2xl text-[#1F38DB] font-bold">
-										Siap Meluncurkan?
+									<p
+										className={`text-2xl font-bold ${
+											myPoinBalance - totalMyPoin < 0
+												? 'text-red-500'
+												: 'text-[#1F38DB]'
+										}`}
+									>
+										{myPoinBalance - totalMyPoin < 0
+											? 'Poin Tidak Mencukupi'
+											: 'Siap Meluncurkan?'}
 									</p>
 									<p className="w-full text-center">
-										Tinjau dan bagikan survei dengan berbagai cara atau
-										publikasikan di BeMySample
+										{myPoinBalance - totalMyPoin < 0
+											? 'Poin Anda tidak mencukupi untuk meluncurkan survei ini. Tambahkan poin terlebih dahulu.'
+											: 'Tinjau dan bagikan survei dengan berbagai cara atau publikasikan di BeMySample'}
 									</p>
-									<button className="px-6 py-2 bg-[#1F38DB] flex flex-row items-center justify-center gap-2 rounded-lg mt-2 text-white">
+									<button
+										className={`px-6 py-2 flex flex-row items-center justify-center gap-2 rounded-lg mt-2 text-white ${
+											myPoinBalance - totalMyPoin < 0
+												? 'bg-gray-400 cursor-not-allowed'
+												: 'bg-[#1F38DB] hover:bg-[#1632A1]'
+										}`}
+										onClick={() => {
+											if (myPoinBalance - totalMyPoin >= 0) {
+												// Tambahkan fungsi untuk meluncurkan survei
+												console.log('Survei berhasil diluncurkan!')
+											} else {
+												console.log('Poin tidak mencukupi!')
+											}
+										}}
+										disabled={myPoinBalance - totalMyPoin < 0}
+									>
 										<Icon icon="mingcute:rocket-fill" />
 										<p>Luncurkan</p>
 									</button>
 								</div>
 							</div>
 						</div>
+
 						<div className="py-7 px-16 w-full h-1/3 flex items-center justify-between">
 							<div className="size-[84px] absolute -top-9 -right-9 bg-[#1F38DB] flex items-center justify-center rounded-full">
 								<p className="absolute bottom-4 left-6 text-white font-lg">4</p>
@@ -537,11 +647,6 @@ const Publish = () => {
 					</div>
 				</div>
 			</div>
-			{/* <img
-				src={footerDecorUnpublished}
-				alt="footerDecorUnpublished"
-				className="w-full absolute bottom-0 left-0 right-0"
-			/> */}
 			<img
 				src={footerUnpublished}
 				alt="footerUnpublished"
@@ -555,7 +660,7 @@ const Publish = () => {
 			/>
 
 			<Helmet>
-				<title>{surveyTitle} - Pratinjau Survei | BeMySample</title>
+				{/* <title>{surveyTitle} - Pratinjau Survei | BeMySample</title> */}
 			</Helmet>
 
 			<style>

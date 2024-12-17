@@ -12,84 +12,77 @@ const MultipleChoice = ({
 	buttonTextColor,
 	textColor,
 	mustBeFilled,
+	listChoices,
+	setListChoices,
+	handleAddOption,
 	otherOption,
 	minChoices,
 	maxChoices,
 	optionsCount,
 	setOptionsCount,
 }) => {
-	const [options, setOptions] = useState([
-		{
-			label: 'Pemilihan umum sebaiknya dilakukan dengan kertas dan pencoblos',
-			value: 'A',
-		},
-		{
-			label:
-				'Digitalisasi sebaiknya dilakukan, pemilu mesti menggunakan komputer',
-			value: 'B',
-		},
-		{ label: 'Saya tidak mengikuti Pemilu', value: 'C' },
-	])
 	const [newOption, setNewOption] = useState('')
 	const [selectedOptions, setSelectedOptions] = useState([])
+	const [editingChoice, setEditingChoice] = useState(null)
+	const [editingText, setEditingText] = useState('')
+	const [isEditingTitle, setIsEditingTitle] = useState(false)
+	const [isEditingDescription, setIsEditingDescription] = useState(false)
 
-	// Handle new option addition
-	const handleAddOption = () => {
+	const handleAddNewOption = () => {
 		if (newOption.trim() !== '') {
-			const nextValue = String.fromCharCode(65 + options.length) // Generate next letter
-			setOptions([...options, { label: newOption, value: nextValue }])
-			setNewOption('')
-			setOptionsCount(options.length + 1) // Update options count
+			handleAddOption(newOption)
+			setNewOption('') // Reset input field
 		}
 	}
 
-	// Handle selecting an option
 	const handleSelectOption = (value) => {
 		if (selectedOptions.includes(value)) {
-			// Remove from selection if already selected
 			setSelectedOptions(selectedOptions.filter((option) => option !== value))
 		} else {
-			// Add to selection if within maxChoices
 			if (selectedOptions.length < maxChoices) {
 				setSelectedOptions([...selectedOptions, value])
 			}
 		}
 	}
 
-	const [isEditingTitle, setIsEditingTitle] = useState(false)
-	const [isEditingDescription, setIsEditingDescription] = useState(false)
-
-	const handleTitleDoubleClick = () => {
-		setIsEditingTitle(true)
+	const handleRemoveOption = (index) => {
+		const updatedChoices = listChoices.filter((_, i) => i !== index)
+		setListChoices(updatedChoices)
 	}
 
-	const handleDescriptionDoubleClick = () => {
-		setIsEditingDescription(true)
+	const handleEditChoice = (index) => {
+		setEditingChoice(index)
+		setEditingText(listChoices[index].label)
 	}
 
-	const handleTitleBlur = (e) => {
-		setIsEditingTitle(false)
-		setTitle(e.target.value)
-	}
-
-	const handleDescriptionBlur = (e) => {
-		setIsEditingDescription(false)
-		setDescription(e.target.value)
-	}
-
-	const handleOptionsCountChange = (e) => {
-		const count = parseInt(e.target.value, 10)
-		if (count >= options.length) {
-			setOptionsCount(count)
-		} else {
-			alert(
-				'Jumlah opsi tidak boleh lebih kecil dari jumlah opsi yang sudah ada.'
-			)
+	const handleEditChoiceBlur = (index) => {
+		if (editingText.trim() !== '') {
+			const updatedChoices = [...listChoices]
+			updatedChoices[index].label = editingText
+			setListChoices(updatedChoices)
 		}
+		setEditingChoice(null)
+		setEditingText('')
 	}
 
 	const isSelectionValid =
 		selectedOptions.length >= minChoices && selectedOptions.length <= maxChoices
+
+	const handleTitleBlur = (e) => {
+		setTitle(e.target.value)
+	}
+
+	const handleDescriptionBlur = (e) => {
+		setDescription(e.target.value)
+	}
+
+	const handleTitleDoubleClick = () => {
+		setTitle('')
+	}
+
+	const handleDescriptionDoubleClick = () => {
+		setDescription('')
+	}
 
 	return (
 		<div
@@ -98,6 +91,7 @@ const MultipleChoice = ({
 			}`}
 		>
 			<div className="flex flex-col items-start mb-4">
+				{/* Title Editing */}
 				{isEditingTitle ? (
 					<input
 						type="text"
@@ -121,6 +115,7 @@ const MultipleChoice = ({
 						{title || 'Siapa nama Anda?'}
 					</h1>
 				)}
+				{/* Description Editing */}
 				{isEditingDescription ? (
 					<input
 						type="text"
@@ -148,7 +143,7 @@ const MultipleChoice = ({
 
 			{/* List of Multiple Choice Options */}
 			<div className="w-full space-y-2 mb-4">
-				{options.map((option, index) => (
+				{listChoices.map((option, index) => (
 					<div key={index} className="flex items-center space-x-2">
 						<button
 							onClick={() => handleSelectOption(option.value)}
@@ -160,7 +155,29 @@ const MultipleChoice = ({
 						>
 							{option.value}
 						</button>
-						<p className="flex-grow text-sm text-gray-800">{option.label}</p>
+						{editingChoice === index ? (
+							<input
+								type="text"
+								value={editingText}
+								onChange={(e) => setEditingText(e.target.value)}
+								onBlur={() => handleEditChoiceBlur(index)}
+								autoFocus
+								className="flex-grow bg-transparent border-b border-gray-400 focus:outline-none text-sm"
+							/>
+						) : (
+							<p
+								className="flex-grow text-sm text-gray-800 cursor-pointer"
+								onDoubleClick={() => handleEditChoice(index)}
+							>
+								{option.label}
+							</p>
+						)}
+						<button
+							onClick={() => handleRemoveOption(index)}
+							className="text-red-500 hover:text-red-700"
+						>
+							<Icon icon="mdi:minus" />
+						</button>
 					</div>
 				))}
 
@@ -169,17 +186,17 @@ const MultipleChoice = ({
 					<div className="flex items-center space-x-2">
 						<button
 							onClick={() =>
-								handleSelectOption(String.fromCharCode(65 + options.length))
+								handleSelectOption(String.fromCharCode(65 + listChoices.length))
 							}
 							className={`min-w-8 min-h-8 flex items-center justify-center font-semibold border rounded-xl ${
 								selectedOptions.includes(
-									String.fromCharCode(65 + options.length)
+									String.fromCharCode(65 + listChoices.length)
 								)
 									? 'bg-blue-500 text-white'
 									: 'border-gray-400 text-gray-700'
 							}`}
 						>
-							{String.fromCharCode(65 + options.length)}
+							{String.fromCharCode(65 + listChoices.length)}
 						</button>
 						<input
 							type="text"
@@ -193,7 +210,7 @@ const MultipleChoice = ({
 			{/* Add New Option Field */}
 			<div className="flex items-center w-full mb-4">
 				<button
-					onClick={handleAddOption}
+					onClick={handleAddNewOption}
 					className="flex items-center px-2 py-1 border border-gray-400 rounded text-gray-700 text-sm"
 				>
 					<Icon icon="mdi:plus" className="mr-2" />
@@ -204,20 +221,7 @@ const MultipleChoice = ({
 					placeholder="Sunting opsi"
 					value={newOption}
 					onChange={(e) => setNewOption(e.target.value)}
-					onKeyPress={(e) => e.key === 'Enter' && handleAddOption()}
 					className="flex-grow ml-2 p-2 bg-transparent border-b border-gray-300 focus:outline-none text-sm"
-				/>
-			</div>
-
-			{/* Options Count */}
-			<div className="flex items-center w-full mb-4">
-				<label className="flex-grow text-sm text-gray-800">Jumlah Opsi</label>
-				<input
-					type="number"
-					min="1"
-					value={optionsCount}
-					onChange={handleOptionsCountChange}
-					className="p-2 rounded border border-gray-300 text-sm"
 				/>
 			</div>
 

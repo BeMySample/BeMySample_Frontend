@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Icon } from '@iconify/react'
 import { useParams } from 'react-router-dom'
 
-const RightSidebar = ({
+const RightSidebarPreview = ({
 	sections,
 	activeSection,
 	setActiveSection,
@@ -102,4 +102,4 @@ const RightSidebar = ({
 	)
 }
 
-export default RightSidebar
+export default RightSidebarPreview

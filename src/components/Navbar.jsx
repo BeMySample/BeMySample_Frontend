@@ -11,7 +11,7 @@ const NavBar = ({
 	position,
 }) => {
 	const storedLanguage = localStorage.getItem('langBMS') || 'id'
-	const navPosition = position || 'justify-center';
+	const navPosition = position || 'justify-center'
 	const [language, setLanguage] = useState(storedLanguage)
 	const [scrolled, setScrolled] = useState(false)
 
@@ -45,20 +45,20 @@ const NavBar = ({
 			exit={{ opacity: 0, y: -10 }}
 			transition={{ duration: 0.3 }}
 		>
-			{/* Left Section */}
 			<div className="ml-5 flex items-center">{childrenLeft}</div>
 
-			{/* Center Section - Desktop Only */}
-			<div className={`hidden lg:flex items-center ${navPosition} flex-grow`}>
+			<div
+				className={`${
+					window.location.pathname === '/' && 'absolute left-0 right-0 top-6'
+				} hidden lg:flex items-center ${navPosition} flex-grow`}
+			>
 				{childrenCenter}
 			</div>
 
-			{/* Right Section */}
 			<div className="mr-5 hidden lg:flex items-center gap-2">
 				{childrenRight}
 			</div>
 
-			{/* Mobile Menu Toggle */}
 			<div className="lg:hidden mr-5 flex items-center">
 				<motion.button onClick={toggleMenu}>
 					{menuOpen ? (
@@ -69,7 +69,6 @@ const NavBar = ({
 				</motion.button>
 			</div>
 
-			{/* Mobile Menu */}
 			{menuOpen && (
 				<motion.div
 					initial={{ opacity: 0, y: -10 }}

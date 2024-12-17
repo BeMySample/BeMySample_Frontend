@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
+import { Link, useParams, useLocation } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast'
 import LeftSidebar from '../../../components/SurveyEdit/Edit/LeftSidebar'
 import MainContent from '../../../components/SurveyEdit/Edit/MainContent'
@@ -7,7 +7,6 @@ import RightSidebar from '../../../components/SurveyEdit/Edit/RightSidebar'
 import RightSidebarPreview from '../../../components/SurveyEdit/Preview/RightSidebar'
 import NavBar from '../../../components/Navbar'
 import Breadcrumbs from '../../../components/SurveyEdit/Breadcrumbs'
-import ProfilePict from '../../../assets/images/profilepict.png'
 import { Icon } from '@iconify/react'
 import { Helmet } from 'react-helmet'
 import { DndProvider } from 'react-dnd'
@@ -15,8 +14,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import ProfileMenu from '../../../components/ProfileMenu'
 import Publish from './Publish'
 import Results from './Results'
-
-const LOCAL_STORAGE_KEY = 'surveyData'
+import Cookies from 'js-cookie'
+import axios from 'axios'
+import Loading from 'react-loading'
 
 const getFormattedDate = () => {
 	const date = new Date()
@@ -30,222 +30,206 @@ const getFormattedDate = () => {
 		timeZone: 'Asia/Jakarta',
 	}
 
-	const formattedDate = new Intl.DateTimeFormat('id-ID', options).format(date)
-	return `${formattedDate} WIB`
+	return `${new Intl.DateTimeFormat('id-ID', options).format(date)} WIB`
 }
 
 const Edit = ({ onEdit }) => {
 	const { id } = useParams()
+	const location = useLocation()
+
 	const [viewMode, setViewMode] = useState('desktop')
+	const [isLoading, setIsLoading] = useState(true)
+	const [surveyData, setSurveyData] = useState({})
 
 	const toggleViewMode = (mode) => {
 		setViewMode(mode)
 	}
 
-	const location = useLocation()
-	const pathSegments = location.pathname.split('/')
-
-	const currentPath = pathSegments[pathSegments.length - 2]
-	const activeMenuFromPath =
-		{
-			edit: 'Sunting',
-			preview: 'Pratinjau',
-			publish: 'Terbitkan',
-			results: 'Hasil',
-		}[currentPath] || ''
-
-	const [activeMenu, setActiveMenu] = useState(activeMenuFromPath)
-
-	const handleMenuClick = (label) => {
-		setActiveMenu(label)
-	}
-
-	const [activeSection, setActiveSection] = useState('welcome')
-	const [sections, setSections] = useState([
-		{ id: 'welcome', label: 'Selamat datang', icon: 'hugeicons:start-up-02' },
-		{ id: 'thankYou', label: 'Closing', icon: 'icon-park-outline:bye' },
-	])
-
-	const [surveyTitle, setSurveyTitle] = useState(
-		JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))?.[id]?.surveyTitle ||
-			'Survei Baru'
-	)
-	const [contentText, setContentText] = useState('')
+	// State
+	const [surveyTitle, setSurveyTitle] = useState('')
 	const [selectedIcon, setSelectedIcon] = useState('')
+	const [sections, setSections] = useState([])
+	const [createdByAI, setCreatedByAI] = useState(false)
 	const [surveyStatus, setSurveyStatus] = useState('draft')
 	const [respondents, setRespondents] = useState(0)
 	const [surveyUpdated, setSurveyUpdated] = useState(getFormattedDate())
-	const [buttonText, setButtonText] = useState('Mulai')
 	const [backgroundImage, setBackgroundImage] = useState(null)
 	const [bgColor, setBgColor] = useState('#FFFFFF')
 	const [bgOpacity, setBgOpacity] = useState(100)
 	const [buttonColor, setButtonColor] = useState('#1F38DB')
+	const [buttonText, setButtonText] = useState('Lanjutkan')
 	const [buttonTextColor, setButtonTextColor] = useState('#FFFFFF')
-	const [textColor, setTextColor] = useState('#000000')
-	const [title, setTitle] = useState('Terima kasih!')
-	const [description, setDescription] = useState(
-		'Anda sudah menyelesaikan survei ini'
-	)
-	const [toggleResponseCopy, setToggleResponseCopy] = useState(false)
-	const [mustBeFilled, setMustBeFilled] = useState(true)
-	const [otherOption, setOtherOption] = useState(false)
-	const [dateFormat, setDateFormat] = useState(null)
-	const [timeFormat, setTimeFormat] = useState(null)
-	const [minChoices, setMinChoices] = useState(1)
+	const [activeMenu, setActiveMenu] = useState('')
+	const [activeSection, setActiveSection] = useState(null)
+
+	const [contentText, setContentText] = useState('')
+	const [dateFormat, setDateFormat] = useState('DD/MM/YYYY')
+	const [timeFormat, setTimeFormat] = useState('24-hour')
+	const [description, setDescription] = useState('')
+	const [largeLabel, setLargeLabel] = useState('')
+	const [listChoices, setListChoices] = useState([])
 	const [maxChoices, setMaxChoices] = useState(1)
-	const [optionsCount, setOptionsCount] = useState(3)
+	const [midLabel, setMidLabel] = useState('')
+	const [minChoices, setMinChoices] = useState(1)
+	const [mustBeFilled, setMustBeFilled] = useState(false)
+	const [optionsCount, setOptionsCount] = useState(1)
+	const [otherOption, setOtherOption] = useState(false)
+	const [smallLabel, setSmallLabel] = useState('')
+	const [textColor, setTextColor] = useState('')
+	const [title, setTitle] = useState('')
+	const [toggleResponseCopy, setToggleResponseCopy] = useState(false)
 
-	const [smallLabel, setSmallLabel] = useState(false)
-	const [midLabel, setMidLabel] = useState(false)
-	const [largeLabel, setLargeLabel] = useState(false)
-
+	const [unsavedChanges, setUnsavedChanges] = useState(false)
 	const [isEditing, setIsEditing] = useState(null)
 	const [editedLabel, setEditedLabel] = useState('')
-	const [unsavedChanges, setUnsavedChanges] = useState(false)
-	const [saveStatus, setSaveStatus] = useState('idle')
 
+	// Fetch data dari API
 	useEffect(() => {
-		if (unsavedChanges) {
-			const autoSaveTimeout = setTimeout(() => {
-				saveToLocalStorage()
-				toast('Perubahan otomatis disimpan!', {
-					icon: <Icon icon="line-md:check-all" />,
-					style: {
-						borderRadius: '10px',
-						background: '#2073DB',
-						color: '#fff',
-					},
-					position: 'bottom-right',
-				})
-				setUnsavedChanges(false)
-			}, 500)
+		const fetchSurveyData = async () => {
+			try {
+				const token = Cookies.get('auth_token')
+				const response = await fetch(
+					`http://localhost:8000/api/surveys/${id}`,
+					{
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${token}`, // Ganti token ini dengan token valid
+						},
+					}
+				)
 
-			return () => clearTimeout(autoSaveTimeout)
+				const result = await response.json()
+
+				// Cek status response
+				if (!response.ok || !result.success) {
+					throw new Error(result.message || 'Gagal mengambil data survei.')
+				}
+
+				const surveyData = result.data
+				setSurveyData(surveyData)
+				console.log('Survey data:', surveyData)
+
+				// Parsing sections dari API (listChoices dalam bentuk string JSON)
+				const parsedSections = surveyData.sections.map((section) => ({
+					id: section.id,
+					icon: section.icon,
+					label: section.label,
+					bgColor: section.bgColor || '#FFFFFF',
+					bgOpacity: section.bgOpacity || 100,
+					buttonColor: section.buttonColor,
+					buttonText: section.buttonText,
+					buttonTextColor: section.buttonTextColor,
+					contentText: section.contentText,
+					dateFormat: section.dateFormat,
+					description: section.description,
+					largeLabel: section.largeLabel,
+					listChoices: JSON.parse(section.listChoices), // Parse string JSON
+					maxChoices: section.maxChoices,
+					midLabel: section.midLabel,
+					minChoices: section.minChoices,
+					mustBeFilled: section.mustBeFilled === 1,
+					otherOption: section.otherOption === 1,
+					optionsCount: section.optionsCount,
+					smallLabel: section.smallLabel,
+					textColor: section.textColor,
+					timeFormat: section.timeFormat,
+					title: section.title,
+					toggleResponseCopy: section.toggleResponseCopy === 1,
+				}))
+
+				// Set state berdasarkan data API
+				setSurveyTitle(surveyData.surveyTitle)
+				console.log(surveyTitle)
+				setSections(parsedSections)
+				setCreatedByAI(surveyData.createdByAI === 1)
+				setSurveyStatus(surveyData.status || 'draft')
+				setRespondents(surveyData.respondents || 0)
+				setBackgroundImage(surveyData.backgroundImage || null)
+				setBgColor(surveyData.bgColor || '#FFFFFF')
+				setBgOpacity(surveyData.bgOpacity || 100)
+				setContentText(parsedSections[0]?.contentText || '')
+				setSurveyUpdated(surveyData.updated_at || getFormattedDate())
+				setActiveSection(parsedSections[0]?.id || null)
+				setDateFormat(parsedSections[0]?.dateFormat || 'DD/MM/YYYY')
+				setDescription(parsedSections[0]?.description || '')
+				setLargeLabel(parsedSections[0]?.largeLabel || '')
+				setListChoices(parsedSections[0]?.listChoices || [])
+				setMaxChoices(parsedSections[0]?.maxChoices || 1)
+				setMidLabel(parsedSections[0]?.midLabel || '')
+				setMinChoices(parsedSections[0]?.minChoices || 1)
+				setMustBeFilled(parsedSections[0]?.mustBeFilled || false)
+				setOtherOption(parsedSections[0]?.otherOption || false)
+				setOptionsCount(parsedSections[0]?.optionsCount || 1)
+				setSmallLabel(parsedSections[0]?.smallLabel || '')
+				setTextColor(parsedSections[0]?.textColor || '')
+				setTimeFormat(parsedSections[0]?.timeFormat || '24-hour')
+				setTitle(parsedSections[0]?.title || '')
+				setToggleResponseCopy(parsedSections[0]?.toggleResponseCopy || false)
+			} catch (error) {
+				console.error('Terjadi kesalahan saat mengambil data survei:', error)
+				toast.error('Gagal mengambil data survei.')
+			} finally {
+				setIsLoading(false)
+			}
 		}
-	}, [
-		sections,
-		surveyTitle,
-		activeSection,
-		contentText,
-		buttonText,
-		backgroundImage,
-		bgColor,
-		bgOpacity,
-		buttonColor,
-		buttonTextColor,
-		textColor,
-		title,
-		description,
-		unsavedChanges,
-		toggleResponseCopy,
-		mustBeFilled,
-		otherOption,
-		optionsCount,
-		dateFormat,
-		timeFormat,
-		minChoices,
-		maxChoices,
-		smallLabel,
-		midLabel,
-		largeLabel,
-	])
 
-	useEffect(() => {
-		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-		const surveyData = savedData[id]
-
-		if (surveyData) {
-			setSections(surveyData.sections || sections)
-			setSurveyTitle(surveyData.surveyTitle || 'Survei Baru')
-
-			const initialSection = surveyData.activeSection || sections[0].id
-			setActiveSection(initialSection)
-
-			const sectionData = surveyData.data[initialSection] || {}
-			setSurveyStatus(surveyData.status || 'draft')
-			setRespondents(surveyData.respondents || 0)
-			setSurveyUpdated(surveyData.updated || getFormattedDate())
-			setContentText(sectionData.contentText || '')
-			setButtonText(sectionData.buttonText || 'Mulai')
-			setBackgroundImage(surveyData.backgroundImage || null)
-			setBgColor(surveyData.bgColor || '#FFFFFF')
-			setBgOpacity(surveyData.bgOpacity || 1)
-			setButtonColor(sectionData.buttonColor || '#1F38DB')
-			setButtonTextColor(sectionData.buttonTextColor || '#FFFFFF')
-			setTextColor(sectionData.textColor || '#000000')
-			setTitle(sectionData.title || 'Terima kasih!')
-			setDescription(
-				sectionData.description || 'Anda sudah menyelesaikan survei ini.'
-			)
-			setToggleResponseCopy(sectionData.toggleResponseCopy || false)
-			setMustBeFilled(sectionData.mustBeFilled || false)
-			setOtherOption(sectionData.otherOption || false)
-			setDateFormat(sectionData.dateFormat || null)
-			setTimeFormat(sectionData.timeFormat || null)
-			setMinChoices(sectionData.minChoices || 1)
-			setMaxChoices(sectionData.maxChoices || 1)
-			setOptionsCount(sectionData.optionsCount || 3)
-
-			setSmallLabel(sectionData.smallLabel || false)
-			setMidLabel(sectionData.midLabel || false)
-			setLargeLabel(sectionData.largeLabel || false)
-		} else {
-			setActiveSection(sections[0].id)
-		}
+		fetchSurveyData()
 	}, [id])
 
-	const saveToLocalStorage = (updatedSections = sections) => {
-		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-
-		const surveyData = {
-			sections: updatedSections,
-			surveyTitle,
-			data: {
-				...savedData[id]?.data,
-				[activeSection]: {
-					contentText,
-					buttonText,
-					bgColor,
-					bgOpacity,
-					buttonColor,
-					buttonTextColor,
-					textColor,
-					title,
-					description,
-					toggleResponseCopy,
-					mustBeFilled,
-					otherOption,
-					dateFormat,
-					timeFormat,
-					minChoices,
-					maxChoices,
-					optionsCount,
-					smallLabel,
-					midLabel,
-					largeLabel,
-				},
-			},
-			bgColor: bgColor,
-			backgroundImage: backgroundImage,
-			bgOpacity: bgOpacity,
-			status: surveyStatus,
-			respondents: respondents,
-			updated: getFormattedDate(),
+	useEffect(() => {
+		if (surveyData.surveyTitle) {
+			setSurveyTitle(surveyData.surveyTitle)
 		}
+	}, [surveyData])
 
-		savedData[id] = surveyData
-		localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(savedData))
-		setUnsavedChanges(false)
+	const handleSectionChange = (id) => {
+		setActiveSection(id)
+		console.log('Active section:', id)
 	}
 
-	const handleTitleChange = (newTitle) => {
-		setSurveyTitle(newTitle)
-		setUnsavedChanges(true)
+	const currentSection = sections.find(
+		(section) => section.id === activeSection
+	)
+
+	// Fungsi untuk mengganti menu aktif
+	const handleMenuClick = (label) => {
+		setActiveMenu(label)
 	}
 
-	const handleChange = (setStateFunction, value) => {
-		setStateFunction(value)
-		setUnsavedChanges(true)
+	// Fungsi untuk mengganti judul survei
+	const handleTitleChange = async (newTitle) => {
+		try {
+			// Update local state for immediate feedback
+			setSurveyTitle(newTitle)
+			setUnsavedChanges(true)
+
+			// Buat payload lengkap berdasarkan state surveyData
+			const updatedData = {
+				...surveyData, // Data lengkap dari surveyData
+				surveyTitle: newTitle, // Hanya surveyTitle yang diperbarui
+				sections: surveyData.sections || [], // Pastikan sections tidak null
+				kriteria: surveyData.kriteria || [], // Pastikan kriteria tidak null
+			}
+
+			// Kirim PUT request ke server
+			const token = Cookies.get('auth_token')
+			await axios.put(`http://localhost:8000/api/surveys/${id}`, updatedData, {
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+			})
+
+			toast.success('Judul survei berhasil diperbarui!')
+			setSurveyData((prev) => ({
+				...prev,
+				surveyTitle: newTitle, // Update state surveyData
+			}))
+		} catch (error) {
+			console.error('Gagal memperbarui judul survei:', error)
+			toast.error('Gagal memperbarui judul survei. Coba lagi.')
+		}
 	}
 
 	const handleRename = (id, label) => {
@@ -267,132 +251,175 @@ const Edit = ({ onEdit }) => {
 		setUnsavedChanges(true)
 	}
 
-	const addItem = () => {
-		const newItem = {
-			id: `item-${sections.length + 1}`,
-			label: `Item Baru ${sections.length + 1}`,
-			icon: selectedIcon || 'mdi:file-document-outline',
+	const handleUpdateSurvey = async () => {
+		try {
+			const updatedSurveyData = {
+				...surveyData, // Ambil semua data survei
+				sections: sections, // Update bagian sections
+			}
+
+			console.log('Updated survey data:', updatedSurveyData)
+
+			// Kirim PUT request ke API
+			const response = await axios.put(
+				`http://localhost:8000/api/surveys/${id}`,
+				updatedSurveyData,
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${Cookies.get('auth_token')}`,
+					},
+				}
+			)
+
+			// Update state lokal dengan data dari response backend
+			setSurveyData(response.data.data)
+			toast.success('Data survei berhasil diperbarui!')
+		} catch (error) {
+			console.error('Gagal memperbarui survei:', error)
+			toast.error('Gagal memperbarui data survei.')
 		}
-		setSections([...sections, newItem])
-		setActiveSection(newItem.id)
-		setUnsavedChanges(true)
 	}
 
-	const handleBackgroundChange = (e) => {
-		const file = e.target.files[0]
-		if (file) {
-			setBackgroundImage(URL.createObjectURL(file))
-			setUnsavedChanges(true)
-		}
-	}
-
-	const handleSectionChange = (sectionId) => {
-		setActiveSection(sectionId)
-
-		const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {}
-		const surveyData = savedData[id]
-		const sectionData = savedData[id]?.data[sectionId] || {}
-		setContentText(sectionData.contentText || '')
-
-		setButtonText(sectionData.buttonText || 'Mulai')
-		setBackgroundImage(surveyData.backgroundImage || null)
-		setBgColor(surveyData.bgColor || '#FFFFFF')
-		setBgOpacity(surveyData.bgOpacity || 1)
-		setButtonColor(sectionData.buttonColor || '#1F38DB')
-		setButtonTextColor(sectionData.buttonTextColor || '#FFFFFF')
-		setTextColor(sectionData.textColor || '#000000')
-		setTitle(sectionData.title || 'Isi Judul di sini')
-		setDescription(sectionData.description || 'Isi deskripsi di sini')
-		setToggleResponseCopy(sectionData.toggleResponseCopy || false)
-		setMustBeFilled(sectionData.mustBeFilled || false)
-		setOtherOption(sectionData.otherOption || false)
-		setDateFormat(sectionData.dateFormat || null)
-		setTimeFormat(sectionData.timeFormat || null)
-		setMinChoices(sectionData.minChoices || 1)
-		setMaxChoices(sectionData.maxChoices || 1)
-		setOptionsCount(sectionData.optionsCount || 3)
-
-		setSmallLabel(sectionData.smallLabel || false)
-		setMidLabel(sectionData.midLabel || false)
-		setLargeLabel(sectionData.largeLabel || false)
-	}
-
-	const updateIconForActiveSection = (newIcon) => {
+	const updateSectionProp = (key, value) => {
 		setSections((prevSections) =>
 			prevSections.map((section) =>
-				section.id === activeSection ? { ...section, icon: newIcon } : section
+				section.id === activeSection
+					? { ...section, [key]: value } // Update hanya prop yang diubah
+					: section
 			)
 		)
-		setUnsavedChanges(true)
-	}
 
-	const handleDelete = (id) => {
-		setSections((prevSections) =>
-			prevSections.filter((section) => section.id !== id)
+		console.log(
+			'Section aktif sebelum update:',
+			sections.find((s) => s.id === activeSection)
 		)
+
+		console.log('Updated section:', key, value)
+		console.log('Sections:', sections)
+
+		// Langsung update ke backend setelah perubahan
 		setUnsavedChanges(true)
+		handleUpdateSurvey()
 	}
 
-	const moveSection = (fromIndex, toIndex) => {
-		const updatedSections = Array.from(sections)
+	const handleTitleChangeInSection = async (newTitle) => {
+		try {
+			// Update state lokal
+			const updatedSections = sections.map((section) =>
+				section.id === activeSection ? { ...section, title: newTitle } : section
+			)
+			setSections(updatedSections)
+			setUnsavedChanges(true)
 
-		const [movedItem] = updatedSections.splice(fromIndex, 1)
-		updatedSections.splice(toIndex, 0, movedItem)
+			// Ambil data survei saat ini dari backend
+			const token = Cookies.get('auth_token')
+			const response = await axios.get(
+				`http://localhost:8000/api/surveys/${id}`,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			)
 
-		setSections(updatedSections)
-		setUnsavedChanges(true)
+			if (!response.data.success) {
+				throw new Error('Gagal mengambil data survei.')
+			}
+
+			const currentSurveyData = response.data.data
+
+			// Perbarui bagian `sections` dengan data terbaru
+			const updatedSurveyData = {
+				...currentSurveyData,
+				sections: updatedSections,
+			}
+
+			// Kirim PUT request untuk memperbarui data survei
+			await axios.put(
+				`http://localhost:8000/api/surveys/${id}`,
+				updatedSurveyData,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			)
+
+			toast.success('Judul berhasil diperbarui!')
+		} catch (error) {
+			console.error('Gagal memperbarui judul:', error)
+			toast.error('Gagal memperbarui judul.')
+		}
 	}
 
-	const handleBackgroundRemove = () => {
-		setBackgroundImage(null)
-		setUnsavedChanges(true)
-	}
+	useEffect(() => {
+		// Dapatkan path saat ini dan tentukan activeMenu berdasarkan URL
+		const pathMap = {
+			edit: 'Sunting',
+			preview: 'Pratinjau',
+			publish: 'Terbit',
+			results: 'Hasil',
+		}
 
-	const [user, setUser] = useState({ name: '', avatar: '' })
+		const currentPath = location.pathname.split('/')[3] // Ambil bagian path ke-3 dari URL
+		setActiveMenu(pathMap[currentPath] || '') // Set activeMenu berdasarkan URL
+	}, [location]) // Berjalan setiap URL berubah
 
+	// Render komponen
 	return (
 		<DndProvider backend={HTML5Backend}>
 			<div className="flex flex-col w-full min-h-screen bg-gray-100 font-inter">
-				<NavBar
-					childrenLeft={
-						<Breadcrumbs
-							items={[
-								{ label: 'Survei Saya', link: '/dashboard/survey' },
-								{ label: surveyTitle, link: `/dashboard/survey/edit/${id}` },
-							]}
-							separator="mdi:chevron-right"
-							onTitleChange={handleTitleChange}
-						/>
-					}
-					childrenCenter={
-						<div className="absolute inset-0 top-0 left-0 right-0 w-full -z-10 flex-grow flex items-center justify-center space-x-8 text-base">
-							{[
-								{ label: 'Sunting', path: 'edit' },
-								{ label: 'Pratinjau', path: 'preview' },
-								{ label: 'Terbitkan', path: 'publish' },
-								{ label: 'Hasil', path: 'results' },
-							].map(({ label, path }) => (
-								<Link
-									key={label}
-									to={`/dashboard/survey/${path}/${id}`}
-									onClick={() => handleMenuClick(label)}
-									className={`relative font-normal focus:outline-none ${
-										activeMenu === label
-											? 'text-blue-600 font-semibold'
-											: 'text-gray-600'
-									}`}
-								>
-									{label}
-									{activeMenu === label && (
-										<span className="absolute -top-8 left-0 right-0 h-[12px] bg-gradient-to-r from-[#1F38DB] to-[#30ADD7] rounded-b-md"></span>
-									)}
-								</Link>
-							))}
-						</div>
-					}
-					childrenRight={<ProfileMenu />}
-				/>
+				{isLoading ? (
+					<div className="absolute left-0 bottom-0 right-0 flex flex-col justify-center items-center w-full bg-white bg-opacity-90 backdrop-blur-md z-20 h-screen">
+						<Loading type="spin" color="#1F38DB" height={50} width={50} />
+						<p className="mt-4 text-gray-700 font-semibold">
+							Memuat data survei...
+						</p>
+					</div>
+				) : (
+					<NavBar
+						childrenLeft={
+							<Breadcrumbs
+								items={[
+									{ label: 'Survei Saya', link: '/dashboard/survey' },
+									{
+										label:
+											surveyData?.surveyTitle || surveyTitle || 'Loading...',
+										link: `/dashboard/survey/edit/${id}`,
+									},
+								]}
+								separator="mdi:chevron-right"
+								onTitleChange={handleTitleChange}
+							/>
+						}
+						childrenCenter={
+							<div className="absolute inset-0 top-0 left-0 right-0 w-full -z-10 flex-grow flex items-center justify-center space-x-8 text-base">
+								{[
+									{ label: 'Sunting', path: 'edit' },
+									{ label: 'Pratinjau', path: 'preview' },
+									{ label: 'Terbit', path: 'publish' },
+									{ label: 'Hasil', path: 'results' },
+								].map(({ label, path }) => (
+									<Link
+										key={label}
+										to={`/dashboard/survey/${path}/${id}`}
+										onClick={() => setActiveMenu(label)} // Set saat menu diklik
+										className={`relative font-normal focus:outline-none ${
+											activeMenu === label
+												? 'text-blue-600 font-semibold'
+												: 'text-gray-600'
+										}`}
+									>
+										{label}
+										{activeMenu === label && (
+											<span className="absolute -top-8 left-0 right-0 h-[12px] bg-gradient-to-r from-[#1F38DB] to-[#30ADD7] rounded-b-md"></span>
+										)}
+									</Link>
+								))}
+							</div>
+						}
+						childrenRight={<ProfileMenu />}
+					/>
+				)}
 				<Toaster position="bottom-right" />
+
 				{location.pathname.includes('edit') && <div className="min-h-20" />}
 				{location.pathname.includes('preview') && <div className="min-h-20" />}
 
@@ -402,16 +429,10 @@ const Edit = ({ onEdit }) => {
 							sections={sections}
 							activeSection={activeSection}
 							setActiveSection={handleSectionChange}
-							addItem={addItem}
-							handleRename={handleRename}
-							isEditing={isEditing}
-							editedLabel={editedLabel}
+							setSections={setSections}
 							handleRenameChange={handleRenameChange}
 							handleRenameSubmit={handleRenameSubmit}
-							handleDelete={handleDelete}
-							moveSection={moveSection}
-							setSections={setSections}
-							saveToLocalStorage={saveToLocalStorage}
+							handleRename={handleRename}
 						/>
 					)}
 
@@ -419,94 +440,105 @@ const Edit = ({ onEdit }) => {
 						location.pathname.includes('preview')) && (
 						<MainContent
 							viewMode={viewMode}
-							editMode={onEdit}
 							sections={sections}
 							activeSection={activeSection}
-							contentText={contentText}
-							textColor={textColor}
-							buttonText={buttonText}
-							buttonColor={buttonColor}
-							buttonTextColor={buttonTextColor}
-							bgColor={bgColor}
+							bgColor={currentSection?.bgColor || bgColor}
 							backgroundImage={backgroundImage}
-							bgOpacity={bgOpacity}
-							title={title}
-							description={description}
-							setTitle={(value) => handleChange(setTitle, value)}
-							setDescription={(value) => handleChange(setDescription, value)}
-							toggleResponseCopy={toggleResponseCopy}
-							mustBeFilled={mustBeFilled}
-							otherOption={otherOption}
-							minChoices={minChoices}
-							maxChoices={maxChoices}
-							optionsCount={optionsCount}
-							smallLabel={smallLabel}
-							midLabel={midLabel}
-							largeLabel={largeLabel}
+							bgOpacity={currentSection?.bgOpacity || bgOpacity}
+							buttonText={currentSection?.buttonText || buttonText}
+							buttonTextColor={
+								currentSection?.buttonTextColor || buttonTextColor
+							}
+							buttonColor={currentSection?.buttonColor || buttonColor}
+							contentText={currentSection?.contentText || contentText}
+							dateFormat={currentSection?.dateFormat || dateFormat}
+							description={currentSection?.description || description}
+							largeLabel={currentSection?.largeLabel || largeLabel}
+							listChoices={currentSection?.listChoices || listChoices}
+							maxChoices={currentSection?.maxChoices || maxChoices}
+							midLabel={currentSection?.midLabel || midLabel}
+							minChoices={currentSection?.minChoices || minChoices}
+							mustBeFilled={currentSection?.mustBeFilled || mustBeFilled}
+							otherOption={currentSection?.otherOption || otherOption}
+							smallLabel={currentSection?.smallLabel || smallLabel}
+							textColor={currentSection?.textColor || textColor}
+							timeFormat={currentSection?.timeFormat || timeFormat}
+							title={currentSection?.title || title}
+							setTitle={handleTitleChangeInSection}
+							toggleResponseCopy={
+								currentSection?.toggleResponseCopy || toggleResponseCopy
+							}
 						/>
 					)}
+
 					{onEdit &&
 						(location.pathname.includes('edit') ||
 							location.pathname.includes('preview')) && (
 							<RightSidebar
 								contentProps={{
-									contentText,
+									contentText: currentSection?.contentText || '',
 									setContentText: (value) =>
-										handleChange(setContentText, value),
-									setSelectedIcon: (value) => {
-										setSelectedIcon(value)
-										updateIconForActiveSection(value)
-									},
-									buttonText,
-									setButtonText: (value) => handleChange(setButtonText, value),
-									title,
-									setTitle: (value) => handleChange(setTitle, value),
-									description,
-									setDescription: (value) =>
-										handleChange(setDescription, value),
-									toggleResponseCopy,
-									setToggleResponseCopy: (value) =>
-										handleChange(setToggleResponseCopy, value),
-									mustBeFilled,
+										updateSectionProp('contentText', value),
+									dateFormat: currentSection?.dateFormat || 'MM/DD/YYYY',
+									setDateFormat: (value) =>
+										updateSectionProp('dateFormat', value),
+									largeLabel: currentSection?.largeLabel || '',
+									setLargeLabel: (value) =>
+										updateSectionProp('largeLabel', value),
+									maxChoices: currentSection?.maxChoices || 1,
+									setMaxChoices: (value) =>
+										updateSectionProp('maxChoices', value),
+									midLabel: currentSection?.midLabel || '',
+									setMidLabel: (value) => updateSectionProp('midLabel', value),
+									minChoices: currentSection?.minChoices || 0,
+									setMinChoices: (value) =>
+										updateSectionProp('minChoices', value),
+									mustBeFilled: currentSection?.mustBeFilled || false,
 									setMustBeFilled: (value) =>
-										handleChange(setMustBeFilled, value),
-									otherOption,
+										updateSectionProp('mustBeFilled', value),
+									otherOption: currentSection?.otherOption || false,
 									setOtherOption: (value) =>
-										handleChange(setOtherOption, value),
-									minChoices,
-									setMinChoices: (value) => handleChange(setMinChoices, value),
-									maxChoices,
-									setMaxChoices: (value) => handleChange(setMaxChoices, value),
-									dateFormat,
-									setDateFormat: (value) => handleChange(setDateFormat, value),
-									timeFormat,
-									setTimeFormat: (value) => handleChange(setTimeFormat, value),
-									optionsCount,
+										updateSectionProp('otherOption', value),
+									optionsCount: currentSection?.optionsCount || 1,
 									setOptionsCount: (value) =>
-										handleChange(setOptionsCount, value),
-									smallLabel,
-									setSmallLabel: (value) => handleChange(setSmallLabel, value),
-									midLabel,
-									setMidLabel: (value) => handleChange(setMidLabel, value),
-									largeLabel,
-									setLargeLabel: (value) => handleChange(setLargeLabel, value),
+										updateSectionProp('optionsCount', value),
+									smallLabel: currentSection?.smallLabel || '',
+									setSmallLabel: (value) =>
+										updateSectionProp('smallLabel', value),
+									textColor: currentSection?.textColor || '#000000',
+									setTextColor: (value) =>
+										updateSectionProp('textColor', value),
+									timeFormat: currentSection?.timeFormat || '24-hour',
+									setTimeFormat: (value) =>
+										updateSectionProp('timeFormat', value),
+									toggleResponseCopy:
+										currentSection?.toggleResponseCopy || false,
+									setToggleResponseCopy: (value) =>
+										updateSectionProp('toggleResponseCopy', value),
+									buttonText: currentSection?.buttonText || 'Next',
+									setButtonText: (value) =>
+										updateSectionProp('buttonText', value),
+									setSelectedIcon: (value) => updateSectionProp('icon', value), // Set icon
 								}}
 								designProps={{
-									bgColor,
-									setBgColor: (value) => handleChange(setBgColor, value),
-									bgOpacity,
-									setBgOpacity: (value) => handleChange(setBgOpacity, value),
-									buttonColor,
+									bgColor: currentSection?.bgColor || bgColor,
+									setBgColor: (value) => handleUpdateSurvey('bgColor', value),
+									bgOpacity: currentSection?.bgOpacity || bgOpacity,
+									setBgOpacity: (value) =>
+										handleUpdateSurvey('bgOpacity', value),
+									backgroundImage: backgroundImage,
+									setBackgroundImage: (value) =>
+										handleUpdateSurvey('backgroundImage', value),
+									textColor: currentSection?.textColor || textColor,
+									setTextColor: (value) =>
+										handleUpdateSurvey('textColor', value),
+									buttonColor: currentSection?.buttonColor || buttonColor,
 									setButtonColor: (value) =>
-										handleChange(setButtonColor, value),
-									buttonTextColor,
+										handleUpdateSurvey('buttonColor', value),
+									buttonTextColor:
+										currentSection?.buttonTextColor || buttonTextColor,
 									setButtonTextColor: (value) =>
-										handleChange(setButtonTextColor, value),
-									textColor,
-									setTextColor: (value) => handleChange(setTextColor, value),
-									backgroundImage,
-									handleBackgroundChange,
-									handleBackgroundRemove,
+										handleUpdateSurvey('buttonTextColor', value),
 								}}
 							/>
 						)}
@@ -521,8 +553,12 @@ const Edit = ({ onEdit }) => {
 					)}
 				</div>
 
-				{location.pathname.includes('publish') && <Publish />}
-				{location.pathname.includes('results') && <Results />}
+				{location.pathname.includes('publish') && (
+					<Publish id={id} surveyData={surveyData} />
+				)}
+				{location.pathname.includes('results') && (
+					<Results id={id} surveyData={surveyData} />
+				)}
 				<Helmet>
 					<title>{surveyTitle} - Sunting Survei | BeMySample</title>
 				</Helmet>

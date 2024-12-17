@@ -82,7 +82,7 @@ const Welcome = ({
 				/>
 			) : (
 				<p
-					className={`font-normal ${
+					className={`font-normal text-center ${
 						viewMode === 'mobile' ? 'text-[16px]' : 'text-[18px]'
 					} mb-4`}
 					style={{ color: textColor }}

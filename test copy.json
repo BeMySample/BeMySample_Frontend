@@ -1,0 +1,146 @@
+{
+	"activeSection": "welcome",
+	"backgroundImage": null,
+	"bgColor": "#FFFFFF",
+	"createdByAI": true,
+	"respondents": 0,
+	"sections": [
+		{
+			"icon": "hugeicons:start-up-02",
+			"id": "welcome",
+			"label": "Selamat datang",
+			"content": {
+				"bgColor": "#FFFFFF",
+				"bgOpacity": 1,
+				"buttonColor": "#1F38DB",
+				"buttonText": "Mulai",
+				"buttonTextColor": "#FFFFFF",
+				"contentText": "Selamat datang",
+				"dateFormat": null,
+				"description": "Terima kasih telah berpartisipasi dalam survei singkat ini tentang pengalaman dan preferensi Anda dalam Machine Learning.",
+				"largeLabel": false,
+				"listChoices": [],
+				"maxChoices": 0,
+				"midLabel": false,
+				"minChoices": 0,
+				"mustBeFilled": false,
+				"optionsCount": 0,
+				"otherOption": false,
+				"smallLabel": false,
+				"textColor": "#000000",
+				"timeFormat": null,
+				"title": "Selamat Datang di Survei Machine Learning!",
+				"toggleResponseCopy": false
+			}
+		},
+		{
+			"icon": "majesticons:text-line",
+			"id": "mlSection1",
+			"label": "Pengalaman Machine Learning",
+			"content": {
+				"bgColor": "#FFFFFF",
+				"bgOpacity": 1,
+				"buttonColor": "#1F38DB",
+				"buttonText": "Berikutnya",
+				"buttonTextColor": "#FFFFFF",
+				"contentText": "Teks Panjang",
+				"dateFormat": null,
+				"description": "Ceritakan pengalaman Anda dengan Machine Learning.  Seberapa familiar Anda dengan berbagai teknik dan algoritma?",
+				"largeLabel": true,
+				"listChoices": [],
+				"maxChoices": 0,
+				"midLabel": false,
+				"minChoices": 0,
+				"mustBeFilled": true,
+				"optionsCount": 0,
+				"otherOption": true,
+				"smallLabel": false,
+				"textColor": "#000000",
+				"timeFormat": null,
+				"title": "Pengalaman Anda dengan Machine Learning",
+				"toggleResponseCopy": false
+			}
+		},
+		{
+			"icon": "carbon:circle-filled",
+			"id": "mlSection2",
+			"label": "Algoritma Favorit",
+			"content": {
+				"bgColor": "#FFFFFF",
+				"bgOpacity": 1,
+				"buttonColor": "#1F38DB",
+				"buttonText": "Selesai",
+				"buttonTextColor": "#FFFFFF",
+				"contentText": "Pilihan Ganda",
+				"dateFormat": null,
+				"description": "Apa algoritma Machine Learning favorit Anda?",
+				"largeLabel": false,
+				"listChoices": [
+					{
+						"label": "Regresi Linear",
+						"value": "A"
+					},
+					{
+						"label": "Regresi Logistik",
+						"value": "B"
+					},
+					{
+						"label": "Support Vector Machine (SVM)",
+						"value": "C"
+					},
+					{
+						"label": "Random Forest",
+						"value": "D"
+					},
+					{
+						"label": "Neural Network",
+						"value": "E"
+					}
+				],
+				"maxChoices": 1,
+				"midLabel": false,
+				"minChoices": 1,
+				"mustBeFilled": true,
+				"optionsCount": 5,
+				"otherOption": true,
+				"smallLabel": false,
+				"textColor": "#000000",
+				"timeFormat": null,
+				"title": "Algoritma Favorit Anda",
+				"toggleResponseCopy": false
+			}
+		},
+		{
+			"icon": "icon-park-outline:bye",
+			"id": "thankYou",
+			"label": "Penutup",
+			"content": {
+				"bgColor": "#FFFFFF",
+				"bgOpacity": 1,
+				"buttonColor": "#1F38DB",
+				"buttonText": null,
+				"buttonTextColor": "#FFFFFF",
+				"contentText": "Closing",
+				"dateFormat": null,
+				"description": "Terima kasih telah meluangkan waktu untuk mengisi survei ini.",
+				"largeLabel": false,
+				"listChoices": [],
+				"maxChoices": 0,
+				"midLabel": false,
+				"minChoices": 0,
+				"mustBeFilled": false,
+				"optionsCount": 0,
+				"otherOption": false,
+				"smallLabel": false,
+				"textColor": "#000000",
+				"timeFormat": null,
+				"title": "Terima Kasih!",
+				"toggleResponseCopy": false
+			}
+		}
+	],
+	"status": "draft",
+	"surveyTitle": "Survei Machine Learning",
+	"created_at": "2024-12-16T04:56:42.000000Z",
+	"updated_at": "2024-12-16T04:56:42.000000Z"
+}

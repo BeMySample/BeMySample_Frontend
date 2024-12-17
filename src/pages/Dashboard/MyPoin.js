@@ -108,9 +108,13 @@ const MyPoin = () => {
 							Jumlah MyPoin
 						</p>
 						<div className="border-2 border-[#2073DB] rounded-2xl flex items-center justify-center px-12 py-6 mt-2 gap-2.5">
-							<Icon icon="akar-icons:coin" className="text-[#2073DB]" fontSize={28} />
+							<Icon
+								icon="akar-icons:coin"
+								className="text-[#2073DB]"
+								fontSize={28}
+							/>
 							<p className="text-[#2073DB] text-2xl font-bold">
-								{isLoading ? 0 : user.poin_saya}
+								{isLoading ? 0 : user.poin_saya.toLocaleString('id-ID')}
 							</p>
 						</div>
 					</div>

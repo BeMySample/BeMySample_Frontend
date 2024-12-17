@@ -179,7 +179,7 @@ const Preview = () => {
 					</div>
 				}
 			/>
-			<Toaster position="top-right" />
+
 			<div className="min-h-20" />
 			<div className="flex flex-grow">
 				<MainContent

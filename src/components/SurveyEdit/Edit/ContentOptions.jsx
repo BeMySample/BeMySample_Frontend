@@ -35,7 +35,7 @@ const ContentOptions = ({
 }) => {
 	const options = [
 		{
-			value: 'Selamat datang',
+			value: 'Selamat Datang',
 			label: 'Pembuka',
 			icon: 'hugeicons:start-up-02',
 			color: '#24B1DB',

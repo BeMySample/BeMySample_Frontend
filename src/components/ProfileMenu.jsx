@@ -34,6 +34,29 @@ const ProfileMenu = () => {
 		try {
 			await toast.promise(
 				(async () => {
+					// Update status user sebelum logout
+					if (user) {
+						const userId = user.id // pastikan 'id' sesuai dengan struktur data user
+						const authType = user.status.split(',')[0].trim() // Ambil tipe autentikasi
+
+						// Update status ke "authType, false"
+						const url = `http://localhost:8000/api/users/edit/${userId}`
+						const payload = {
+							...user,
+							status: `${authType}, false`,
+						}
+
+						// Lakukan fetch untuk update data user
+						await fetch(url, {
+							method: 'PUT',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify(payload),
+						})
+					}
+
+					// Proses logout
 					await logout()
 					setUser(null)
 					Cookies.remove('auth_token')
@@ -57,7 +80,6 @@ const ProfileMenu = () => {
 
 	return (
 		<div className="relative">
-			<Toaster position="top-center" reverseOrder={false} />
 			{/* Profile Section */}
 			{isLoading ? (
 				<div className="flex justify-center items-center">
@@ -67,12 +89,7 @@ const ProfileMenu = () => {
 						exit={{ opacity: 0 }}
 						transition={{ duration: 0.5 }}
 					>
-						<ReactLoading
-							type="spinningBubbles"
-							color="#1F38DB"
-							height={32}
-							width={32}
-						/>
+						<ReactLoading type="spin" color="#1F38DB" height={32} width={32} />
 					</motion.div>
 				</div>
 			) : (
@@ -96,9 +113,7 @@ const ProfileMenu = () => {
 								className="hover:bg-zinc-100 px-4 py-2 rounded-lg flex items-center gap-2 h-full"
 							>
 								<Icon icon="akar-icons:coin" />
-								<p>
-									{user?.poin || 0}{' '}
-								</p>
+								<p>{user?.poin_saya.toLocaleString('id-ID') || 0} Poin</p>
 							</Link>
 						)
 					)}
@@ -149,13 +164,15 @@ const ProfileMenu = () => {
 								Dasbor
 							</Link>
 						)}
-						<Link
-							className="flex flex-row gap-2 items-center w-full px-4 py-2 text-left hover:text-blue-500 hover:bg-blue-200 rounded-lg transition-all duration-200"
-							to="/dashboard/profile#about"
-						>
-							<Icon icon="mdi:account" className="mr-2 text-lg" />
-							Profil
-						</Link>
+						{location.pathname !== '/' && (
+							<Link
+								className="flex flex-row gap-2 items-center w-full px-4 py-2 text-left hover:text-blue-500 hover:bg-blue-200 rounded-lg transition-all duration-200"
+								to="/dashboard/profile#about"
+							>
+								<Icon icon="mdi:account" className="mr-2 text-lg" />
+								Profil
+							</Link>
+						)}
 						<button
 							className="flex flex-row gap-2 items-center w-full px-4 py-2 text-left text-red-500 hover:bg-red-100 rounded-lg transition-all duration-200"
 							onClick={handleLogout}

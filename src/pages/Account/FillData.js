@@ -202,7 +202,7 @@ const FillData = () => {
 										name="nama_lengkap"
 										value={formData.nama_lengkap}
 										onChange={handleChange}
-										placeholder="Ex: John Doe"
+										placeholder="Misal: John Doe"
 										className="p-2 border border-gray-300 rounded-lg w-full md:w-2/3"
 										required
 									/>
@@ -261,7 +261,7 @@ const FillData = () => {
 										name="pekerjaan"
 										value={formData.pekerjaan}
 										onChange={handleChange}
-										placeholder="Ex: Software Engineer"
+										placeholder="Misal: Software Engineer"
 										className="p-2 border border-gray-300 rounded-lg w-full md:w-2/3"
 									/>
 								</div>
@@ -281,7 +281,7 @@ const FillData = () => {
 											name="lokasi"
 											value={formData.lokasi}
 											onChange={handleChange}
-											placeholder="Ex: Jakarta"
+											placeholder="Misal: Jakarta"
 											className="p-2 border border-gray-300 rounded-lg w-full"
 										/>
 										<button
@@ -313,7 +313,7 @@ const FillData = () => {
 										name="institusi"
 										value={formData.institusi}
 										onChange={handleChange}
-										placeholder="Ex: Universitas Indonesia"
+										placeholder="Misal: Universitas Indonesia"
 										className="p-2 border border-gray-300 rounded-lg w-full md:w-2/3"
 									/>
 								</div>

@@ -1,0 +1,44 @@
+{
+	"kvr9pvq4s62swqtktep6": {
+		"sections": [
+			{
+				"id": "welcome",
+				"label": "Selamat datang",
+				"icon": "hugeicons:start-up-02"
+			},
+			{
+				"id": "thankYou",
+				"label": "Terima Kasih",
+				"icon": "icon-park-outline:bye"
+			}
+		],
+		"surveyTitle": "Survei Baru",
+		"activeSection": "welcome",
+		"data": {
+			"welcome": {
+				"contentText": "Selamat datang",
+				"buttonText": "Mulai",
+				"backgroundImage": null,
+				"bgColor": "#FFFFFF",
+				"buttonColor": "#1F38DB",
+				"textColor": "#000000",
+				"title": "Isi Judul di sini",
+				"description": "Isi deskripsi di sini"
+			},
+			"thankYou": {
+				"contentText": "Closing",
+				"buttonText": "Selesai",
+				"backgroundImage": null,
+				"bgColor": "#FFFFFF",
+				"buttonColor": "#1F38DB",
+				"textColor": "#000000",
+				"title": "Isi Judul di sini",
+				"description": "Isi deskripsi di sini"
+			}
+		},
+		"updated": "2024-12-16T04:56:42.000000Z",
+		"status": "draft",
+		"respondents": 0,
+		"isAI": false
+	}
+}

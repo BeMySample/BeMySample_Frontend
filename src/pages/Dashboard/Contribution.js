@@ -100,7 +100,10 @@ const Contribution = () => {
 					<div className="flex flex-col w-full mt-4">
 						{isLoadingContributions ? (
 							// Tampilkan spinner loading
-							<Loading type="spin" color="#1F38DB" height={50} width={50} />
+							<div className="flex flex-col gap-2 justify-center items-center w-full h-[200px] border-2 rounded-2xl">
+								<Loading type="spin" color="#1F38DB" height={50} width={50} />
+								Memuat data kontribusi...
+							</div>
 						) : contributions.length > 0 ? (
 							// Tampilkan daftar kontribusi jika data tersedia
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">

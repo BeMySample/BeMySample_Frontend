@@ -83,7 +83,13 @@ const DraggableItem = ({
 						icon={item.icon}
 						className="mr-2 text-lg"
 						style={{
-							color: activeSection === item.id ? '#FFFFFF' : item.icon === 'hugeicons:start-up-02' || item.icon === 'icon-park-outline:bye' ? '#2073DB' : '#7F1FDB',
+							color:
+								activeSection === item.id
+									? '#FFFFFF'
+									: item.icon === 'hugeicons:start-up-02' ||
+									  item.icon === 'icon-park-outline:bye'
+									? '#2073DB'
+									: '#7F1FDB',
 						}}
 					/>
 					{isEditing === item.id ? (
@@ -202,7 +208,7 @@ const LeftSidebar = ({
 	}
 
 	return (
-		<aside className="w-1/5 bg-neutral-100 p-4 overflow-y-auto max-h-[90vh]">
+		<aside className="w-1/5 max-w-[400px] bg-neutral-100 p-4 overflow-y-auto max-h-[90vh]">
 			<ul className="space-y-4">
 				{sections.map((section, index) => (
 					<DraggableItem

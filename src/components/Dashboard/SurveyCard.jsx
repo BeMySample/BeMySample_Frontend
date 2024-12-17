@@ -10,6 +10,8 @@ const SurveyCard = ({
 	updated,
 	image,
 	status,
+	coinAllocated,
+	coinUsed,
 	onEdit,
 	onDelete,
 	isActive,
@@ -55,17 +57,12 @@ const SurveyCard = ({
 				<div className="flex flex-row">
 					<p
 						className={`px-2 py-1.5 rounded-l-xl text-center flex items-center justify-center gap-2 font-inter z-10 text-white text-xs ${
-							status === 'active'
-								? 'bg-[#1F38DB]'
-								: status === 'closed'
-								? 'bg-[#EB221E]'
-								: 'bg-[#5A5A5A]'
+							status === 'draft' ? 'bg-gray-400' : 'bg-[#2073DB]'
 						}`}
 					>
 						<p style={{ writingMode: 'vertical-lr', rotate: '180deg' }}>
-							{status === 'active' && 'Dibuka'}
-							{status === 'closed' && 'Terhenti'}
-							{status === 'draft' && 'Draft'}
+							{status === 'draft' && 'Draf'}
+							{status === 'published' && 'Terbit'}
 						</p>
 					</p>
 					<img
@@ -77,8 +74,8 @@ const SurveyCard = ({
 				<div className="px-4 md:px-8">
 					<div className="flex flex-row gap-2 items-center mb-2">
 						<p className="font-bold font-inter text-[16px]">{title}</p>
-						{isCreatedByAI && (
-							<span className="flex flex-row gap-2 items-center bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full px-3 py-1.5 text-white text-sm">
+						{isCreatedByAI === 1 && (
+							<span className="flex flex-row gap-1 items-center bg-gradient-to-r from-blue-400 to-blue-500 rounded-full px-2.5 py-1 text-white text-sm">
 								<p>AI</p>
 								<Icon icon="ri:gemini-fill" fontSize={16} />
 							</span>
@@ -91,6 +88,13 @@ const SurveyCard = ({
 								className="text-[13.33px] text-[#595959]"
 							/>
 							<p className="text-[12px]">{respondents} responden</p>
+						</div>
+						<div className="flex flex-row items-center gap-2 font-inter">
+							<Icon
+								icon="akar-icons:coin"
+								className="text-[13.33px] text-[#595959]"
+							/>
+							<p className="text-[12px]">{coinAllocated} koin </p>
 						</div>
 						<div className="flex flex-row items-center gap-2 font-inter">
 							<Icon
